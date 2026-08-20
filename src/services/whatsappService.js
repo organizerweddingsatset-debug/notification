@@ -18,9 +18,10 @@ export const setWaGatewayUrl = (url) => {
 
 export const getFonnteToken = () => {
   if (typeof window !== 'undefined') {
-    return localStorage.getItem('rt_fonnte_token') || '';
+    const saved = localStorage.getItem('rt_fonnte_token');
+    if (saved && saved.trim()) return saved.trim();
   }
-  return '';
+  return import.meta.env.VITE_FONNTE_TOKEN || 'kLjCFQkTZrw9gaJJQcDW';
 };
 
 export const setFonnteToken = (token) => {
