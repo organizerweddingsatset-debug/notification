@@ -217,3 +217,29 @@ ${isApproved ? 'Surat pengantar resmi digital sudah dapat diunduh dan dicetak me
 Terima kasih. 🙏
 _Pengurus RT 09 / RW 14 Sumputsarirejo, Driyorejo_`;
 };
+
+export const createReminderTanggal15Message = ({ nama, blok, periode, nominal = 15000 }) => {
+  const fmt = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n);
+
+  return `⏰ *PENGINGAT (REMINDER) TANGGAL 15 - IURAN WAJIB RT 09*
+*Perumahan De Naila Village Blok G*
+
+Yth. Bapak/Ibu *${nama || 'Warga'}* (Blok ${blok || '-'})
+
+Mengingatkan bahwa hari ini adalah tanggal 15, batas waktu pembayaran *Iuran Wajib Bulanan RT 09* periode *${periode || 'Bulan Ini'}*:
+💰 *Nominal Iuran Wajib:* *${fmt(nominal)}*
+📌 *Status:* *BELUM LUNAS*
+
+💳 *Kemudahan Pembayaran:*
+1. Scan QRIS Kas RT 09 pada Portal Warga (Otomatis & Realtime)
+2. Transfer Bank ke Rekening Resmi Kas RT 09
+3. Tunai melalui Tim Bendahara RT 09
+
+Mohon kesediaannya untuk melakukan pembayaran demi kelancaran operasional dan keamanan lingkungan kita bersama.
+
+Bagi yang sudah melakukan transfer/pembayaran, mohon abaikan pesan ini atau konfirmasi melalui Portal Warga RT 09.
+Terima kasih banyak atas kerjasamanya! 🙏✨
+
+_Pengurus & Tim Bendahara RT 09 / RW 14 De Naila Village_`;
+};
+

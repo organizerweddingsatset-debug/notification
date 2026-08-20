@@ -4,7 +4,8 @@ import {
   sendWaMessage,
   openDirectWhatsApp,
   createTagihanMessage,
-  createKwitansiMessage
+  createKwitansiMessage,
+  createReminderTanggal15Message
 } from '../services/whatsappService';
 
 // Fungsi Terbilang Bahasa Indonesia
@@ -34,13 +35,12 @@ function getTerbilang(nominal) {
 }
 
 const INITIAL_TAGIHAN_LIST = [
-  { id: 'tag-1', nama: 'Daniel Kristianto', blok: 'G-12', tagihan: 'Iuran Kebersihan & Sampah', bulan: 'Agustus 2026', bulanNama: 'Agustus', tahun: '2026', nominal: 50000, status: 'Lunas', no_kwitansi: 'KW/RT09-RW14/2026/08/012', tgl_bayar: '14 Agustus 2026', tgl_bayar_short: '14 Agt 2026', metode: 'QRIS', nik: '3525121405920001' },
-  { id: 'tag-2', nama: 'Daniel Kristianto', blok: 'G-12', tagihan: 'Iuran Keamanan & Satpam', bulan: 'Agustus 2026', bulanNama: 'Agustus', tahun: '2026', nominal: 75000, status: 'Belum Lunas', no_kwitansi: '-', tgl_bayar: '-', tgl_bayar_short: '-', metode: '-', nik: '3525121405920001' },
-  { id: 'tag-3', nama: 'Daniel Kristianto', blok: 'G-12', tagihan: 'Kas Sosial RT 09', bulan: 'Agustus 2026', bulanNama: 'Agustus', tahun: '2026', nominal: 30000, status: 'Lunas', no_kwitansi: 'KW/RT09-RW14/2026/08/009', tgl_bayar: '10 Agustus 2026', tgl_bayar_short: '10 Agt 2026', metode: 'Transfer', nik: '3525121405920001' },
-  { id: 'tag-4', nama: 'Daniel Kristianto', blok: 'G-12', tagihan: 'Iuran Listrik Pos & Taman', bulan: 'Agustus 2026', bulanNama: 'Agustus', tahun: '2026', nominal: 25000, status: 'Belum Lunas', no_kwitansi: '-', tgl_bayar: '-', tgl_bayar_short: '-', metode: '-', nik: '3525121405920001' },
-  { id: 'tag-5', nama: 'Budi Santoso', blok: 'G-10', tagihan: 'Iuran Kebersihan & Keamanan', bulan: 'Agustus 2026', bulanNama: 'Agustus', tahun: '2026', nominal: 125000, status: 'Lunas', no_kwitansi: 'KW/RT09-RW14/2026/08/022', tgl_bayar: '12 Agustus 2026', tgl_bayar_short: '12 Agt 2026', metode: 'QRIS', nik: '3525121102880005' },
-  { id: 'tag-6', nama: 'Siti Rahmawati', blok: 'G-05', tagihan: 'Kas Sosial RT 09', bulan: 'Agustus 2026', bulanNama: 'Agustus', tahun: '2026', nominal: 30000, status: 'Belum Lunas', no_kwitansi: '-', tgl_bayar: '-', tgl_bayar_short: '-', metode: '-', nik: '3525122509890003' },
-  { id: 'tag-7', nama: 'Ahmad Fauzi', blok: 'G-08', tagihan: 'Iuran Keamanan & Kebersihan', bulan: 'Agustus 2026', bulanNama: 'Agustus', tahun: '2026', nominal: 125000, status: 'Lunas', no_kwitansi: 'KW/RT09-RW14/2026/08/001', tgl_bayar: '05 Agustus 2026', tgl_bayar_short: '05 Agt 2026', metode: 'Transfer', nik: '3525121903930004' }
+  { id: 'tag-1', nama: 'Daniel Kristianto', blok: 'G-12', tagihan: 'Iuran Wajib Bulanan', is_wajib: true, bulan: 'Agustus 2026', bulanNama: 'Agustus', tahun: '2026', nominal: 15000, status: 'Lunas', no_kwitansi: 'KW/RT09-RW14/2026/08/012', tgl_bayar: '14 Agustus 2026', tgl_bayar_short: '14 Agt 2026', metode: 'QRIS', nik: '3525121405920001' },
+  { id: 'tag-2', nama: 'Daniel Kristianto', blok: 'G-12', tagihan: 'Iuran Kegiatan / HUT RI / Agustusan', is_wajib: false, bulan: 'Agustus 2026', bulanNama: 'Agustus', tahun: '2026', nominal: 70000, status: 'Belum Lunas', no_kwitansi: '-', tgl_bayar: '-', tgl_bayar_short: '-', metode: '-', nik: '3525121405920001' },
+  { id: 'tag-3', nama: 'Budi Santoso', blok: 'G-10', tagihan: 'Iuran Wajib Bulanan', is_wajib: true, bulan: 'Agustus 2026', bulanNama: 'Agustus', tahun: '2026', nominal: 15000, status: 'Lunas', no_kwitansi: 'KW/RT09-RW14/2026/08/022', tgl_bayar: '12 Agustus 2026', tgl_bayar_short: '12 Agt 2026', metode: 'QRIS', nik: '3525121102880005' },
+  { id: 'tag-4', nama: 'Budi Santoso', blok: 'G-10', tagihan: 'Iuran Kegiatan / HUT RI / Agustusan', is_wajib: false, bulan: 'Agustus 2026', bulanNama: 'Agustus', tahun: '2026', nominal: 70000, status: 'Lunas', no_kwitansi: 'KW/RT09-RW14/2026/08/023', tgl_bayar: '13 Agustus 2026', tgl_bayar_short: '13 Agt 2026', metode: 'Transfer', nik: '3525121102880005' },
+  { id: 'tag-5', nama: 'Siti Rahmawati', blok: 'G-05', tagihan: 'Iuran Wajib Bulanan', is_wajib: true, bulan: 'Agustus 2026', bulanNama: 'Agustus', tahun: '2026', nominal: 15000, status: 'Belum Lunas', no_kwitansi: '-', tgl_bayar: '-', tgl_bayar_short: '-', metode: '-', nik: '3525122509890003' },
+  { id: 'tag-6', nama: 'Ahmad Fauzi', blok: 'G-08', tagihan: 'Iuran Wajib Bulanan', is_wajib: true, bulan: 'Agustus 2026', bulanNama: 'Agustus', tahun: '2026', nominal: 15000, status: 'Lunas', no_kwitansi: 'KW/RT09-RW14/2026/08/001', tgl_bayar: '05 Agustus 2026', tgl_bayar_short: '05 Agt 2026', metode: 'Transfer', nik: '3525121903930004' }
 ];
 
 export default function Iuran() {
@@ -55,7 +55,7 @@ export default function Iuran() {
     if (saved !== null) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       } catch (e) { }
     }
     if (isReset) return [];
@@ -73,25 +73,26 @@ export default function Iuran() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showMassalModal, setShowMassalModal] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSendingReminder, setIsSendingReminder] = useState(false);
 
   // Form Buat Tagihan Satuan
   const [singleForm, setSingleForm] = useState({
     wargaIdx: 0,
-    kategori: 'Iuran Kebersihan & Sampah',
+    kategori: 'Iuran Wajib Bulanan',
     kategoriCustom: '',
     bulanNama: 'Agustus',
     tahun: '2026',
-    nominal: 50000,
+    nominal: 15000,
     sendWa: true
   });
 
   // Form Generate Massal
   const [massalForm, setMassalForm] = useState({
-    paketType: 'paket_lengkap', // 'paket_lengkap' | 'keamanan' | 'kebersihan' | 'sosial' | 'listrik' | 'custom'
-    namaTagihan: 'Iuran Wajib RT 09 (Kebersihan & Keamanan)',
+    paketType: 'iuran_wajib', // 'iuran_wajib' | 'agustusan' | 'custom'
+    namaTagihan: 'Iuran Wajib Bulanan',
     bulanNama: 'Agustus',
     tahun: '2026',
-    nominal: 125000,
+    nominal: 15000,
     sendWa: true
   });
 
@@ -152,17 +153,19 @@ export default function Iuran() {
     const selectedWarga = wargaList[singleForm.wargaIdx] || wargaList[0];
     const namaTagihan = singleForm.kategori === 'custom' ? singleForm.kategoriCustom : singleForm.kategori;
     const periodeBulan = `${singleForm.bulanNama} ${singleForm.tahun}`;
+    const isWajib = singleForm.kategori === 'Iuran Wajib Bulanan';
 
     const newTagihan = {
       id: `tag-${Date.now()}-${Math.floor(Math.random()*1000)}`,
       nama: selectedWarga.nama_lengkap,
       blok: selectedWarga.blok_rumah,
       nik: selectedWarga.nik || '-',
-      tagihan: namaTagihan || 'Iuran Warga RT 09',
+      tagihan: namaTagihan || 'Iuran Wajib Bulanan',
+      is_wajib: isWajib,
       bulan: periodeBulan,
       bulanNama: singleForm.bulanNama,
       tahun: singleForm.tahun,
-      nominal: Number(singleForm.nominal) || 50000,
+      nominal: Number(singleForm.nominal) || (isWajib ? 15000 : 70000),
       status: 'Belum Lunas',
       no_kwitansi: '-',
       tgl_bayar: '-',
@@ -186,6 +189,7 @@ export default function Iuran() {
     e.preventDefault();
     setIsGenerating(true);
     const periodeBulan = `${massalForm.bulanNama} ${massalForm.tahun}`;
+    const isWajib = massalForm.paketType === 'iuran_wajib';
     const generatedList = [];
 
     wargaList.forEach(w => {
@@ -203,10 +207,11 @@ export default function Iuran() {
           blok: w.blok_rumah,
           nik: w.nik || '-',
           tagihan: massalForm.namaTagihan,
+          is_wajib: isWajib,
           bulan: periodeBulan,
           bulanNama: massalForm.bulanNama,
           tahun: massalForm.tahun,
-          nominal: Number(massalForm.nominal) || 125000,
+          nominal: Number(massalForm.nominal) || (isWajib ? 15000 : 70000),
           status: 'Belum Lunas',
           no_kwitansi: '-',
           tgl_bayar: '-',
@@ -237,6 +242,39 @@ export default function Iuran() {
         await new Promise(r => setTimeout(r, 600)); // safe delay
       }
     }
+  };
+
+  // Handler Trigger Reminder Tanggal 15 (Khusus Iuran Wajib Bulanan Belum Lunas)
+  const handleTriggerReminderTgl15 = async () => {
+    const pendingWajibList = tagihanList.filter(t => 
+      t.status !== 'Lunas' && 
+      (t.is_wajib === true || t.tagihan.toLowerCase().includes('iuran wajib'))
+    );
+
+    if (pendingWajibList.length === 0) {
+      showToastMsg('🎉 Semua warga sudah melunasi Iuran Wajib Bulanan! Tidak ada yang perlu dikirimi reminder.');
+      return;
+    }
+
+    if (!confirm(`Kirimkan pesan WhatsApp Reminder Tanggal 15 ke ${pendingWajibList.length} warga yang belum lunas Iuran Wajib Bulanan (Rp 15.000)?`)) {
+      return;
+    }
+
+    setIsSendingReminder(true);
+    showToastMsg(`📲 Mengirimkan Reminder Tanggal 15 ke ${pendingWajibList.length} warga...`);
+    for (const item of pendingWajibList) {
+      const phone = getWargaPhone(item.nama, item.blok);
+      const msg = createReminderTanggal15Message({
+        nama: item.nama,
+        blok: item.blok,
+        periode: item.bulan,
+        nominal: item.nominal || 15000
+      });
+      await sendWaMessage(phone, msg);
+      await new Promise(r => setTimeout(r, 600));
+    }
+    setIsSendingReminder(false);
+    showToastMsg(`✅ Selesai mengirimkan Reminder Tanggal 15 ke ${pendingWajibList.length} warga!`);
   };
 
   // Handler Hapus Tagihan
@@ -341,10 +379,8 @@ export default function Iuran() {
     );
     if (list.length === 0 && !isAdmin && !isReset) {
       list = [
-        { id: `tag-${rtBlok}-1`, nama: rtNama, blok: rtBlok, tagihan: 'Iuran Kebersihan & Sampah', bulan: 'Agustus 2026', bulanNama: 'Agustus', tahun: '2026', nominal: 50000, status: 'Belum Lunas', no_kwitansi: '-', tgl_bayar: '-', tgl_bayar_short: '-', metode: '-' },
-        { id: `tag-${rtBlok}-2`, nama: rtNama, blok: rtBlok, tagihan: 'Iuran Keamanan & Satpam', bulan: 'Agustus 2026', bulanNama: 'Agustus', tahun: '2026', nominal: 75000, status: 'Belum Lunas', no_kwitansi: '-', tgl_bayar: '-', tgl_bayar_short: '-', metode: '-' },
-        { id: `tag-${rtBlok}-3`, nama: rtNama, blok: rtBlok, tagihan: 'Kas Sosial RT 09', bulan: 'Agustus 2026', bulanNama: 'Agustus', tahun: '2026', nominal: 30000, status: 'Belum Lunas', no_kwitansi: '-', tgl_bayar: '-', tgl_bayar_short: '-', metode: '-' },
-        { id: `tag-${rtBlok}-4`, nama: rtNama, blok: rtBlok, tagihan: 'Iuran Listrik Pos & Taman', bulan: 'Agustus 2026', bulanNama: 'Agustus', tahun: '2026', nominal: 25000, status: 'Belum Lunas', no_kwitansi: '-', tgl_bayar: '-', tgl_bayar_short: '-', metode: '-' }
+        { id: `tag-${rtBlok}-1`, nama: rtNama, blok: rtBlok, tagihan: 'Iuran Wajib Bulanan', is_wajib: true, bulan: 'Agustus 2026', bulanNama: 'Agustus', tahun: '2026', nominal: 15000, status: 'Belum Lunas', no_kwitansi: '-', tgl_bayar: '-', tgl_bayar_short: '-', metode: '-' },
+        { id: `tag-${rtBlok}-2`, nama: rtNama, blok: rtBlok, tagihan: 'Iuran Kegiatan / HUT RI / Agustusan', is_wajib: false, bulan: 'Agustus 2026', bulanNama: 'Agustus', tahun: '2026', nominal: 70000, status: 'Belum Lunas', no_kwitansi: '-', tgl_bayar: '-', tgl_bayar_short: '-', metode: '-' }
       ];
     }
     return list;
@@ -528,7 +564,44 @@ export default function Iuran() {
                 >
                   <span>⚡</span> Generate Iuran Massal
                 </button>
+                <button
+                  onClick={handleTriggerReminderTgl15}
+                  disabled={isSendingReminder}
+                  title="Kirim pesan WhatsApp pengingat khusus Iuran Wajib Bulanan yang belum lunas (Jatuh tempo tiap tanggal 15)"
+                  className="bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 px-3.5 py-2.5 rounded-xl text-xs font-semibold cursor-pointer active:scale-95 transition flex items-center gap-1.5"
+                >
+                  <span>⏰</span> {isSendingReminder ? 'Mengirim...' : 'Kirim Reminder Tgl 15'}
+                </button>
               </div>
+            )}
+          </div>
+
+          {/* Banner Auto-Reminder Info */}
+          <div className="bg-gradient-to-r from-amber-500/10 via-[#23263A] to-[#1A1D2E] border border-amber-500/20 rounded-2xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2.5">
+              <span className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-sm font-bold">
+                ⏰
+              </span>
+              <div>
+                <div className="font-bold text-white flex items-center gap-2">
+                  <span>Kebijakan Reminder Otomatis Tanggal 15</span>
+                  <span className="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.2 rounded-full font-mono">
+                    Khusus Iuran Wajib (Rp 15.000)
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Pengingat otomatis jatuh tempo diterbitkan setiap tanggal 15 hanya untuk warga yang belum melunasi Iuran Wajib Bulanan.
+                </p>
+              </div>
+            </div>
+            {isAdmin && (
+              <button
+                onClick={handleTriggerReminderTgl15}
+                disabled={isSendingReminder}
+                className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3 py-1.5 rounded-xl text-[11px] cursor-pointer transition whitespace-nowrap active:scale-95 flex items-center gap-1 shadow-md shadow-amber-500/20"
+              >
+                <span>📲</span> Kirim Reminder Sekarang
+              </button>
             )}
           </div>
 
@@ -607,8 +680,8 @@ export default function Iuran() {
             <table className="w-full text-sm border-collapse">
               <thead className="text-[10px] text-slate-400 uppercase tracking-wider bg-black/20 border-b border-white/10 font-bold">
                 <tr>
-                  <th className="text-left px-5 py-3.5 w-[32%]">TAGIHAN</th>
-                  <th className="text-left px-3 py-3.5 w-[18%]">BULAN</th>
+                  <th className="text-left px-5 py-3.5 w-[34%]">TAGIHAN</th>
+                  <th className="text-left px-3 py-3.5 w-[16%]">BULAN</th>
                   <th className="text-left px-3 py-3.5 w-[18%]">NOMINAL</th>
                   <th className="text-left px-3 py-3.5 w-[16%]">STATUS</th>
                   <th className="text-right px-5 py-3.5 w-[16%]">AKSI</th>
@@ -629,10 +702,25 @@ export default function Iuran() {
                         {isAdmin ? (
                           <>
                             <div className="font-semibold text-white text-xs">{r.nama}</div>
-                            <div className="text-[11px] text-slate-400">{r.tagihan} <span className="text-[#A78BFA] font-mono">(Blok {r.blok})</span></div>
+                            <div className="text-[11px] text-slate-400 flex items-center gap-1.5 flex-wrap mt-0.5">
+                              <span>{r.tagihan}</span>
+                              <span className="text-[#A78BFA] font-mono">(Blok {r.blok})</span>
+                              {r.is_wajib || r.tagihan?.toLowerCase().includes('iuran wajib') ? (
+                                <span className="text-[9px] bg-amber-500/15 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded-full font-mono">
+                                  ⏰ Auto-Reminder Tgl 15
+                                </span>
+                              ) : null}
+                            </div>
                           </>
                         ) : (
-                          <div className="font-medium text-white text-xs">{r.tagihan}</div>
+                          <div>
+                            <div className="font-medium text-white text-xs">{r.tagihan}</div>
+                            {r.is_wajib || r.tagihan?.toLowerCase().includes('iuran wajib') ? (
+                              <div className="text-[10px] text-amber-400 font-mono mt-0.5">
+                                ⏰ Pengingat Jatuh Tempo Tiap Tanggal 15
+                              </div>
+                            ) : null}
+                          </div>
                         )}
                       </td>
                       <td className="px-3 py-3.5 text-slate-300 text-xs font-mono">{r.bulan}</td>
@@ -886,21 +974,14 @@ export default function Iuran() {
                     onChange={(e) => {
                       const val = e.target.value;
                       let nom = singleForm.nominal;
-                      if (val === 'Iuran Kebersihan & Sampah') nom = 50000;
-                      if (val === 'Iuran Keamanan & Satpam') nom = 75000;
-                      if (val === 'Iuran Paket Lengkap (Kebersihan + Keamanan)') nom = 125000;
-                      if (val === 'Kas Sosial RT 09') nom = 30000;
-                      if (val === 'Iuran Listrik Pos & Taman') nom = 25000;
+                      if (val === 'Iuran Wajib Bulanan') nom = 15000;
+                      if (val === 'Iuran Kegiatan / HUT RI / Agustusan') nom = 70000;
                       setSingleForm({ ...singleForm, kategori: val, nominal: nom });
                     }}
                     className="w-full bg-[#23263A] border border-white/10 rounded-xl px-3 py-2.5 text-white font-medium outline-none focus:border-[#7C3AED] cursor-pointer"
                   >
-                    <option value="Iuran Kebersihan & Sampah">🧹 Iuran Kebersihan & Sampah (Rp 50.000)</option>
-                    <option value="Iuran Keamanan & Satpam">🛡️ Iuran Keamanan & Satpam (Rp 75.000)</option>
-                    <option value="Iuran Paket Lengkap (Kebersihan + Keamanan)">🌟 Iuran Paket Lengkap Kebersihan & Keamanan (Rp 125.000)</option>
-                    <option value="Kas Sosial RT 09">🤝 Kas Sosial RT 09 (Rp 30.000)</option>
-                    <option value="Iuran Listrik Pos & Taman">💡 Iuran Listrik Pos & Taman (Rp 25.000)</option>
-                    <option value="Iuran Kegiatan Warga / Agustusan">🎉 Iuran Kegiatan / HUT RI / Agustusan</option>
+                    <option value="Iuran Wajib Bulanan">🌟 Iuran Wajib Bulanan (Rp 15.000) [⏰ Auto-Reminder Tgl 15]</option>
+                    <option value="Iuran Kegiatan / HUT RI / Agustusan">🎉 Iuran Kegiatan / HUT RI / Agustusan (Rp 70.000)</option>
                     <option value="custom">✏️ Kategori Lainnya (Ketik Manual)...</option>
                   </select>
                 </div>
@@ -1035,31 +1116,19 @@ export default function Iuran() {
                       const val = e.target.value;
                       let nama = massalForm.namaTagihan;
                       let nom = massalForm.nominal;
-                      if (val === 'paket_lengkap') {
-                        nama = 'Iuran Wajib RT 09 (Kebersihan & Keamanan)';
-                        nom = 125000;
-                      } else if (val === 'keamanan') {
-                        nama = 'Iuran Keamanan & Satpam';
-                        nom = 75000;
-                      } else if (val === 'kebersihan') {
-                        nama = 'Iuran Kebersihan & Sampah';
-                        nom = 50000;
-                      } else if (val === 'sosial') {
-                        nama = 'Kas Sosial RT 09';
-                        nom = 30000;
-                      } else if (val === 'listrik') {
-                        nama = 'Iuran Listrik Pos & Taman';
-                        nom = 25000;
+                      if (val === 'iuran_wajib') {
+                        nama = 'Iuran Wajib Bulanan';
+                        nom = 15000;
+                      } else if (val === 'agustusan') {
+                        nama = 'Iuran Kegiatan / HUT RI / Agustusan';
+                        nom = 70000;
                       }
                       setMassalForm({ ...massalForm, paketType: val, namaTagihan: nama, nominal: nom });
                     }}
                     className="w-full bg-[#23263A] border border-white/10 rounded-xl px-3 py-2.5 text-white font-medium outline-none focus:border-emerald-500 cursor-pointer"
                   >
-                    <option value="paket_lengkap">🌟 Paket Standar RT 09 (Kebersihan + Keamanan: Rp 125.000)</option>
-                    <option value="keamanan">🛡️ Iuran Keamanan & Satpam Saja (Rp 75.000)</option>
-                    <option value="kebersihan">🧹 Iuran Kebersihan & Sampah Saja (Rp 50.000)</option>
-                    <option value="sosial">🤝 Kas Sosial RT 09 (Rp 30.000)</option>
-                    <option value="listrik">💡 Listrik Fasum & Lampu Taman (Rp 25.000)</option>
+                    <option value="iuran_wajib">🌟 Iuran Wajib Bulanan (Rp 15.000 / KK) [⏰ Auto-Reminder Tgl 15]</option>
+                    <option value="agustusan">🎉 Iuran Kegiatan / HUT RI / Agustusan (Rp 70.000 / KK)</option>
                     <option value="custom">✏️ Custom Nama & Nominal...</option>
                   </select>
                 </div>
