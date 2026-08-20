@@ -49,16 +49,27 @@ export default function Pengaturan() {
 
   // 4. KONFIGURASI PENAUTAN JABATAN PENGURUS RT KE WARGA AKTIF
   const [pengurusConfig, setPengurusConfig] = useState(() => {
-    const saved = localStorage.getItem('rt_pengurus_config');
-    if (saved) {
-      try { return JSON.parse(saved); } catch (e) { }
-    }
-    return {
+    const defaultPengurus = {
       ketua_rt: { nama: 'Ketua RT 09 Terpilih', blok: 'Pos RT', no_hp: '0812-9999-8888', nik: '3525120101750001' },
       sekretaris: { nama: 'Daniel Kristianto', blok: 'G-12', no_hp: '0812-3456-7890', nik: '3525121405920001' },
       bendahara: { nama: 'Budi Santoso', blok: 'G-10', no_hp: '0812-1111-2222', nik: '3525121102880005' },
-      seksi_keamanan: { nama: 'Ahmad Fauzi', blok: 'G-08', no_hp: '0812-5555-4444', nik: '3525121903930004' }
+      keamanan: { nama: 'Ahmad Fauzi', blok: 'G-08', no_hp: '0812-5555-4444', nik: '3525121903930004' }
     };
+    const saved = localStorage.getItem('rt_pengurus_config');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return {
+          ...defaultPengurus,
+          ...parsed,
+          ketua_rt: parsed.ketua_rt || defaultPengurus.ketua_rt,
+          sekretaris: parsed.sekretaris || defaultPengurus.sekretaris,
+          bendahara: parsed.bendahara || defaultPengurus.bendahara,
+          keamanan: parsed.keamanan || parsed.seksi_keamanan || defaultPengurus.keamanan
+        };
+      } catch (e) { }
+    }
+    return defaultPengurus;
   });
 
   // 5. KONFIGURASI WHATSAPP GATEWAY NOTIFIKASI
@@ -624,12 +635,12 @@ export default function Pengaturan() {
               <div className="bg-[#23263A] border border-white/10 rounded-2xl p-4 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-white text-xs flex items-center gap-1.5">
-                    🎖️ Ketua RT 09 (Penandatangan Surat & LPJ)
+                    👑 Ketua RT 09 (Penandatangan Dokumen)
                   </span>
-                  <span className="text-[10px] text-[#A78BFA] font-mono">Blok {pengurusConfig.ketua_rt.blok}</span>
+                  <span className="text-[10px] text-[#A78BFA] font-mono">Blok {pengurusConfig?.ketua_rt?.blok || 'Pos RT'}</span>
                 </div>
                 <select
-                  value={pengurusConfig.ketua_rt.nama}
+                  value={pengurusConfig?.ketua_rt?.nama || ''}
                   onChange={(e) => handleSelectPengurus('ketua_rt', e.target.value)}
                   className="w-full bg-[#1A1D2E] border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500 cursor-pointer font-medium"
                 >
@@ -640,8 +651,8 @@ export default function Pengaturan() {
                   ))}
                 </select>
                 <div className="text-[11px] text-slate-400 flex justify-between pt-1">
-                  <span>Kontak: <strong className="text-slate-200">{pengurusConfig.ketua_rt.no_hp}</strong></span>
-                  <span>NIK: {pengurusConfig.ketua_rt.nik || '-'}</span>
+                  <span>Kontak: <strong className="text-slate-200">{pengurusConfig?.ketua_rt?.no_hp || '-'}</strong></span>
+                  <span>NIK: {pengurusConfig?.ketua_rt?.nik || '-'}</span>
                 </div>
               </div>
 
@@ -651,10 +662,10 @@ export default function Pengaturan() {
                   <span className="font-bold text-white text-xs flex items-center gap-1.5">
                     💰 Bendahara RT 09 (Kwitansi & Kas RT)
                   </span>
-                  <span className="text-[10px] text-[#A78BFA] font-mono">Blok {pengurusConfig.bendahara.blok}</span>
+                  <span className="text-[10px] text-[#A78BFA] font-mono">Blok {pengurusConfig?.bendahara?.blok || 'G-10'}</span>
                 </div>
                 <select
-                  value={pengurusConfig.bendahara.nama}
+                  value={pengurusConfig?.bendahara?.nama || ''}
                   onChange={(e) => handleSelectPengurus('bendahara', e.target.value)}
                   className="w-full bg-[#1A1D2E] border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500 cursor-pointer font-medium"
                 >
@@ -665,8 +676,8 @@ export default function Pengaturan() {
                   ))}
                 </select>
                 <div className="text-[11px] text-slate-400 flex justify-between pt-1">
-                  <span>Kontak: <strong className="text-slate-200">{pengurusConfig.bendahara.no_hp}</strong></span>
-                  <span>NIK: {pengurusConfig.bendahara.nik || '-'}</span>
+                  <span>Kontak: <strong className="text-slate-200">{pengurusConfig?.bendahara?.no_hp || '-'}</strong></span>
+                  <span>NIK: {pengurusConfig?.bendahara?.nik || '-'}</span>
                 </div>
               </div>
 
@@ -676,10 +687,10 @@ export default function Pengaturan() {
                   <span className="font-bold text-white text-xs flex items-center gap-1.5">
                     📑 Sekretaris RT 09 (Administrasi & Notulen)
                   </span>
-                  <span className="text-[10px] text-[#A78BFA] font-mono">Blok {pengurusConfig.sekretaris.blok}</span>
+                  <span className="text-[10px] text-[#A78BFA] font-mono">Blok {pengurusConfig?.sekretaris?.blok || 'G-12'}</span>
                 </div>
                 <select
-                  value={pengurusConfig.sekretaris.nama}
+                  value={pengurusConfig?.sekretaris?.nama || ''}
                   onChange={(e) => handleSelectPengurus('sekretaris', e.target.value)}
                   className="w-full bg-[#1A1D2E] border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500 cursor-pointer font-medium"
                 >
@@ -690,8 +701,8 @@ export default function Pengaturan() {
                   ))}
                 </select>
                 <div className="text-[11px] text-slate-400 flex justify-between pt-1">
-                  <span>Kontak: <strong className="text-slate-200">{pengurusConfig.sekretaris.no_hp}</strong></span>
-                  <span>NIK: {pengurusConfig.sekretaris.nik || '-'}</span>
+                  <span>Kontak: <strong className="text-slate-200">{pengurusConfig?.sekretaris?.no_hp || '-'}</strong></span>
+                  <span>NIK: {pengurusConfig?.sekretaris?.nik || '-'}</span>
                 </div>
               </div>
 
@@ -701,10 +712,10 @@ export default function Pengaturan() {
                   <span className="font-bold text-white text-xs flex items-center gap-1.5">
                     🛡️ Seksi Keamanan & Pos Satpam Blok G
                   </span>
-                  <span className="text-[10px] text-[#A78BFA] font-mono">Blok {pengurusConfig.keamanan.blok}</span>
+                  <span className="text-[10px] text-[#A78BFA] font-mono">Blok {pengurusConfig?.keamanan?.blok || 'G-08'}</span>
                 </div>
                 <select
-                  value={pengurusConfig.keamanan.nama}
+                  value={pengurusConfig?.keamanan?.nama || ''}
                   onChange={(e) => handleSelectPengurus('keamanan', e.target.value)}
                   className="w-full bg-[#1A1D2E] border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500 cursor-pointer font-medium"
                 >
@@ -715,8 +726,8 @@ export default function Pengaturan() {
                   ))}
                 </select>
                 <div className="text-[11px] text-slate-400 flex justify-between pt-1">
-                  <span>Kontak: <strong className="text-slate-200">{pengurusConfig.keamanan.no_hp}</strong></span>
-                  <span>NIK: {pengurusConfig.keamanan.nik || '-'}</span>
+                  <span>Kontak: <strong className="text-slate-200">{pengurusConfig?.keamanan?.no_hp || '-'}</strong></span>
+                  <span>NIK: {pengurusConfig?.keamanan?.nik || '-'}</span>
                 </div>
               </div>
 
