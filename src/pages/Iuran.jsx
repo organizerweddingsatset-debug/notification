@@ -1030,14 +1030,16 @@ export default function Iuran() {
                   }}
                   className="flex-1 bg-black hover:bg-gray-800 text-white py-2.5 rounded-xl text-xs font-semibold cursor-pointer flex items-center justify-center gap-1.5"
                 >
-                  🖨️ Cetak Kwitansi
+                  🖨️ Cetak / Unduh Kwitansi
                 </button>
-                <button
-                  onClick={() => handleSendWaKwitansi(selectedKwitansi)}
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl text-xs font-semibold cursor-pointer flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95"
-                >
-                  📲 Kirim WA Warga
-                </button>
+                {isAdmin && (
+                  <button
+                    onClick={() => handleSendWaKwitansi(selectedKwitansi)}
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl text-xs font-semibold cursor-pointer flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95"
+                  >
+                    📲 Kirim WA Warga
+                  </button>
+                )}
                 <button
                   onClick={() => setShowKwitansi(false)}
                   className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2.5 rounded-xl text-xs font-semibold cursor-pointer"
