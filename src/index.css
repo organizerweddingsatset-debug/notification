@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+body {
+  margin: 0;
+  background: #0B0E1A;
+  color: #E2E8F0;
+}
+
+.card {
+  background: #1A1D2E;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+}
+
+.card-inner {
+  background: #23263A;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+}
