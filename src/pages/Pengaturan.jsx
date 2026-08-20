@@ -4,6 +4,8 @@ import { supabase, reinitSupabase } from '../supabaseClient';
 import {
   getWaGatewayUrl,
   setWaGatewayUrl,
+  getFonnteToken,
+  setFonnteToken,
   checkWaStatus,
   restartWaGateway,
   logoutWaGateway,
@@ -61,6 +63,7 @@ export default function Pengaturan() {
 
   // 5. KONFIGURASI WHATSAPP GATEWAY NOTIFIKASI
   const [waGatewayUrlInput, setWaGatewayUrlInput] = useState(getWaGatewayUrl());
+  const [fonnteTokenInput, setFonnteTokenInput] = useState(getFonnteToken());
   const [liveWaState, setLiveWaState] = useState({
     status: 'checking',
     qr: null,
@@ -264,8 +267,9 @@ export default function Pengaturan() {
   const handleSaveWaConfig = (e) => {
     e.preventDefault();
     setWaGatewayUrl(waGatewayUrlInput);
+    setFonnteToken(fonnteTokenInput);
     localStorage.setItem('rt_wa_config', JSON.stringify(waConfig));
-    showToastMsg('Pengaturan WhatsApp Gateway & Server URL berhasil disimpan!');
+    showToastMsg('Pengaturan WhatsApp Gateway & API Token berhasil disimpan!');
   };
 
   const handleTestWa = async () => {
@@ -779,18 +783,33 @@ export default function Pengaturan() {
                 </div>
               </div>
 
-              {/* Server URL Config */}
+              {/* Option A: Fonnte API Token (No Server needed) */}
+              <div className="space-y-1 pt-1 border-t border-white/5">
+                <label className="text-[11px] text-slate-400 flex justify-between">
+                  <span>API Token Fonnte (Opsi Instan):</span>
+                  <span className="text-[10px] text-emerald-400">fonnte.com (Tanpa Server)</span>
+                </label>
+                <input
+                  type="password"
+                  value={fonnteTokenInput}
+                  onChange={(e) => setFonnteTokenInput(e.target.value)}
+                  placeholder="Tempel token Fonnte di sini..."
+                  className="w-full bg-[#1A1D2E] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              {/* Option B: Self-Hosted Server URL Config */}
               <div className="space-y-1 pt-1 border-t border-white/5">
                 <label className="text-[11px] text-slate-400 flex justify-between">
                   <span>Backend Gateway Server URL:</span>
-                  <span className="text-[10px] text-emerald-400">Node.js Express / Baileys</span>
+                  <span className="text-[10px] text-blue-400">Node.js Baileys / Tunnel</span>
                 </label>
                 <input
                   type="text"
                   value={waGatewayUrlInput}
                   onChange={(e) => setWaGatewayUrlInput(e.target.value)}
                   placeholder="http://localhost:5001"
-                  className="w-full bg-[#1A1D2E] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono outline-none focus:border-emerald-500"
+                  className="w-full bg-[#1A1D2E] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono outline-none focus:border-blue-500"
                 />
               </div>
 

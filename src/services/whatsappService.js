@@ -1,5 +1,5 @@
 /**
- * WhatsApp Gateway & Direct Chat Service for Portal RT 09
+ * WhatsApp Gateway, Fonnte & Direct Chat Service for Portal RT 09
  */
 
 export const getWaGatewayUrl = () => {
@@ -13,6 +13,19 @@ export const getWaGatewayUrl = () => {
 export const setWaGatewayUrl = (url) => {
   if (typeof window !== 'undefined') {
     localStorage.setItem('rt_wa_gateway_url', url.trim());
+  }
+};
+
+export const getFonnteToken = () => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('rt_fonnte_token') || '';
+  }
+  return '';
+};
+
+export const setFonnteToken = (token) => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('rt_fonnte_token', token.trim());
   }
 };
 
@@ -30,13 +43,32 @@ export const formatIndonesianPhone = (phone) => {
 
 // Check backend status & QR
 export const checkWaStatus = async () => {
+  const fonnteToken = getFonnteToken();
+  if (fonnteToken) {
+    try {
+      const res = await fetch('https://api.fonnte.com/device', {
+        method: 'POST',
+        headers: { Authorization: fonnteToken }
+      });
+      const data = await res.json();
+      if (data.status) {
+        return {
+          status: 'connected',
+          provider: 'fonnte',
+          user: { name: data.name || 'Fonnte WA Gateway', phone: data.device || '' }
+        };
+      }
+    } catch (e) {}
+  }
+
   try {
     const res = await fetch(`${getWaGatewayUrl()}/api/wa/status`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
+    const data = await res.json();
+    return { ...data, provider: 'baileys' };
   } catch (err) {
     return { status: 'offline', error: err.message };
   }
@@ -62,10 +94,34 @@ export const logoutWaGateway = async () => {
   }
 };
 
-// Send message via Gateway Bot
+// Send message via Gateway Bot / Fonnte
 export const sendWaMessage = async (to, message) => {
+  const formattedPhone = formatIndonesianPhone(to);
+  const fonnteToken = getFonnteToken();
+
+  // 1. Try Fonnte if token configured
+  if (fonnteToken) {
+    try {
+      const formData = new FormData();
+      formData.append('target', formattedPhone);
+      formData.append('message', message);
+
+      const res = await fetch('https://api.fonnte.com/send', {
+        method: 'POST',
+        headers: { Authorization: fonnteToken },
+        body: formData
+      });
+      const data = await res.json();
+      if (data.status) {
+        return { success: true, messageId: data.id, provider: 'fonnte' };
+      }
+    } catch (err) {
+      console.warn('Fonnte send error:', err);
+    }
+  }
+
+  // 2. Try Local / Self-Hosted Baileys Gateway
   try {
-    const formattedPhone = formatIndonesianPhone(to);
     const res = await fetch(`${getWaGatewayUrl()}/api/wa/send`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
