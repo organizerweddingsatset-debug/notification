@@ -668,7 +668,7 @@ export default function Iuran() {
                 <button
                   onClick={() => setFilterStatus('lunas')}
                   className={`px-3 py-1.5 rounded-lg font-medium transition cursor-pointer flex items-center gap-1 ${
-                    filterStatus === 'lunas' ? 'bg-emerald-600 text-white' : 'text-emerald-400 hover:bg-white/5'
+                  filterStatus === 'lunas' ? 'bg-emerald-600 text-white' : 'text-emerald-400 hover:bg-white/5'
                   }`}
                 >
                   <span>Lunas</span>
@@ -677,55 +677,164 @@ export default function Iuran() {
               </div>
             </div>
 
-            <table className="w-full text-sm border-collapse">
-              <thead className="text-[10px] text-slate-400 uppercase tracking-wider bg-black/20 border-b border-white/10 font-bold">
-                <tr>
-                  <th className="text-left px-5 py-3.5 w-[34%]">TAGIHAN</th>
-                  <th className="text-left px-3 py-3.5 w-[16%]">BULAN</th>
-                  <th className="text-left px-3 py-3.5 w-[18%]">NOMINAL</th>
-                  <th className="text-left px-3 py-3.5 w-[16%]">STATUS</th>
-                  <th className="text-right px-5 py-3.5 w-[16%]">AKSI</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {data.length === 0 ? (
+            {/* Desktop Table View (Tablet & Desktop screens) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm border-collapse">
+                <thead className="text-[10px] text-slate-400 uppercase tracking-wider bg-black/20 border-b border-white/10 font-bold">
                   <tr>
-                    <td colSpan="5" className="py-12 text-center text-slate-400 text-xs">
-                      <div className="text-2xl mb-1">📭</div>
-                      Tidak ada tagihan yang sesuai filter.
-                    </td>
+                    <th className="text-left px-5 py-3.5 w-[34%]">TAGIHAN</th>
+                    <th className="text-left px-3 py-3.5 w-[16%]">BULAN</th>
+                    <th className="text-left px-3 py-3.5 w-[18%]">NOMINAL</th>
+                    <th className="text-left px-3 py-3.5 w-[16%]">STATUS</th>
+                    <th className="text-right px-5 py-3.5 w-[16%]">AKSI</th>
                   </tr>
-                ) : (
-                  data.map((r, i) => (
-                    <tr key={r.id || i} className="border-b border-white/5 hover:bg-white/[0.02] transition">
-                      <td className="px-5 py-3.5 text-white text-[13px]">
-                        {isAdmin ? (
-                          <>
-                            <div className="font-semibold text-white text-xs">{r.nama}</div>
-                            <div className="text-[11px] text-slate-400 flex items-center gap-1.5 flex-wrap mt-0.5">
-                              <span>{r.tagihan}</span>
-                              <span className="text-[#A78BFA] font-mono">(Blok {r.blok})</span>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {data.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" className="py-12 text-center text-slate-400 text-xs">
+                        <div className="text-2xl mb-1">📭</div>
+                        Tidak ada tagihan yang sesuai filter.
+                      </td>
+                    </tr>
+                  ) : (
+                    data.map((r, i) => (
+                      <tr key={r.id || i} className="border-b border-white/5 hover:bg-white/[0.02] transition">
+                        <td className="px-5 py-3.5 text-white text-[13px]">
+                          {isAdmin ? (
+                            <>
+                              <div className="font-semibold text-white text-xs">{r.nama}</div>
+                              <div className="text-[11px] text-slate-400 flex items-center gap-1.5 flex-wrap mt-0.5">
+                                <span>{r.tagihan}</span>
+                                <span className="text-[#A78BFA] font-mono">(Blok {r.blok})</span>
+                                {r.is_wajib || r.tagihan?.toLowerCase().includes('iuran wajib') ? (
+                                  <span className="text-[9px] bg-amber-500/15 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded-full font-mono">
+                                    ⏰ Auto-Reminder Tgl 15
+                                  </span>
+                                ) : null}
+                              </div>
+                            </>
+                          ) : (
+                            <div>
+                              <div className="font-medium text-white text-xs">{r.tagihan}</div>
                               {r.is_wajib || r.tagihan?.toLowerCase().includes('iuran wajib') ? (
-                                <span className="text-[9px] bg-amber-500/15 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded-full font-mono">
-                                  ⏰ Auto-Reminder Tgl 15
-                                </span>
+                                <div className="text-[10px] text-amber-400 font-mono mt-0.5">
+                                  ⏰ Pengingat Jatuh Tempo Tiap Tanggal 15
+                                </div>
                               ) : null}
                             </div>
-                          </>
-                        ) : (
-                          <div>
-                            <div className="font-medium text-white text-xs">{r.tagihan}</div>
-                            {r.is_wajib || r.tagihan?.toLowerCase().includes('iuran wajib') ? (
-                              <div className="text-[10px] text-amber-400 font-mono mt-0.5">
-                                ⏰ Pengingat Jatuh Tempo Tiap Tanggal 15
-                              </div>
-                            ) : null}
+                          )}
+                        </td>
+                        <td className="px-3 py-3.5 text-slate-300 text-xs font-mono">{r.bulan}</td>
+                        <td className="px-3 py-3.5 text-white text-xs font-mono font-bold">{fmt(r.nominal)}</td>
+                        <td className="px-3 py-3.5 whitespace-nowrap">
+                          {r.status === 'Lunas' ? (
+                            <span className="text-[11px] bg-emerald-500/15 text-emerald-300 px-2.5 py-1 rounded-full border border-emerald-500/30 font-medium inline-flex items-center gap-1">
+                              <span>●</span> Lunas ({r.metode || 'QRIS'})
+                            </span>
+                          ) : (
+                            <span className="text-[11px] bg-rose-500/15 text-rose-300 px-2.5 py-1 rounded-full border border-rose-500/30 font-medium inline-flex items-center gap-1">
+                              <span>●</span> Belum Lunas
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-5 py-3.5 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {r.status === 'Lunas' ? (
+                              <>
+                                <button
+                                  onClick={() => handleOpenKwitansi(r)}
+                                  className="text-[11px] bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-lg text-slate-200 transition cursor-pointer flex items-center gap-1 active:scale-95"
+                                >
+                                  📄 Kwitansi
+                                </button>
+                                {isAdmin && (
+                                  <button
+                                    onClick={() => handleSendWaKwitansi(r)}
+                                    title="Kirim Kwitansi Lunas ke WhatsApp Warga"
+                                    className="text-[11px] bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 px-2.5 py-1.5 rounded-lg font-medium transition cursor-pointer flex items-center gap-1 active:scale-95"
+                                  >
+                                    📲 WA
+                                  </button>
+                                )}
+                              </>
+                            ) : (
+                              <>
+                                {isAdmin && (
+                                  <>
+                                    <button
+                                      onClick={() => handleSendWaTagihan(r)}
+                                      title="Kirim Tagihan ke WhatsApp Warga"
+                                      className="text-[11px] bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 px-2.5 py-1.5 rounded-lg font-medium transition cursor-pointer flex items-center gap-1 active:scale-95"
+                                    >
+                                      📲 WA
+                                    </button>
+                                    <button
+                                      onClick={() => handleMarkLunas(r, 'Tunai / Pengurus')}
+                                      className="text-[11px] bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1.5 rounded-lg font-medium transition cursor-pointer shadow-sm active:scale-95"
+                                    >
+                                      ✓ Set Lunas
+                                    </button>
+                                  </>
+                                )}
+                                <button
+                                  onClick={() => openQris(r)}
+                                  className="text-[11px] bg-[#7C3AED] hover:bg-[#6D28D9] text-white px-3.5 py-1.5 rounded-lg font-semibold transition cursor-pointer shadow-sm shadow-[#7C3AED]/20 active:scale-95"
+                                >
+                                  ⚡ Bayar QRIS
+                                </button>
+                              </>
+                            )}
+                            {isAdmin && (
+                              <button
+                                onClick={() => handleDeleteTagihan(r)}
+                                title="Hapus Tagihan Ini"
+                                className="text-[11px] text-slate-500 hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-500/10 transition cursor-pointer"
+                              >
+                                🗑️
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card List View (Specifically for Android / iPhone Smartphone screens) */}
+            <div className="block md:hidden divide-y divide-white/5">
+              {data.length === 0 ? (
+                <div className="py-12 text-center text-slate-400 text-xs">
+                  <div className="text-2xl mb-1">📭</div>
+                  Tidak ada tagihan yang sesuai filter.
+                </div>
+              ) : (
+                data.map((r, i) => (
+                  <div key={r.id || i} className="p-4 space-y-3 hover:bg-white/[0.02] transition">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="space-y-1 flex-1">
+                        <div className="font-bold text-white text-sm">
+                          {r.tagihan}
+                        </div>
+                        {isAdmin && (
+                          <div className="text-xs text-slate-300 font-medium">
+                            {r.nama} <span className="text-[#A78BFA] font-mono">(Blok {r.blok})</span>
                           </div>
                         )}
-                      </td>
-                      <td className="px-3 py-3.5 text-slate-300 text-xs font-mono">{r.bulan}</td>
-                      <td className="px-3 py-3.5 text-white text-xs font-mono font-bold">{fmt(r.nominal)}</td>
-                      <td className="px-3 py-3.5 whitespace-nowrap">
+                        <div className="flex items-center gap-2 flex-wrap pt-0.5">
+                          <span className="text-[11px] text-slate-400 font-mono">
+                            📅 {r.bulan}
+                          </span>
+                          {r.is_wajib || r.tagihan?.toLowerCase().includes('iuran wajib') ? (
+                            <span className="text-[9px] bg-amber-500/15 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full font-mono">
+                              ⏰ Reminder Tiap Tgl 15
+                            </span>
+                          ) : null}
+                        </div>
+                      </div>
+                      <div>
                         {r.status === 'Lunas' ? (
                           <span className="text-[11px] bg-emerald-500/15 text-emerald-300 px-2.5 py-1 rounded-full border border-emerald-500/30 font-medium inline-flex items-center gap-1">
                             <span>●</span> Lunas ({r.metode || 'QRIS'})
@@ -735,61 +844,72 @@ export default function Iuran() {
                             <span>●</span> Belum Lunas
                           </span>
                         )}
-                      </td>
-                      <td className="px-5 py-3.5 text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end gap-1.5">
-                          {r.status === 'Lunas' ? (
+                      </div>
+                    </div>
+                    <div className="bg-[#23263A]/80 border border-white/5 rounded-xl p-2.5 flex items-center justify-between">
+                      <span className="text-[11px] text-slate-400">Total Tagihan:</span>
+                      <span className="text-base font-bold text-emerald-400 font-mono">{fmt(r.nominal)}</span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                      {r.status === 'Lunas' ? (
+                        <>
+                          <button
+                            onClick={() => handleOpenKwitansi(r)}
+                            className="flex-1 bg-white/10 hover:bg-white/20 border border-white/15 text-white py-2.5 rounded-xl text-xs font-semibold cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 transition shadow-sm"
+                          >
+                            📄 Lihat Kwitansi Sah
+                          </button>
+                          {isAdmin && (
+                            <button
+                              onClick={() => handleSendWaKwitansi(r)}
+                              title="Kirim Kwitansi ke WhatsApp Warga"
+                              className="bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-300 px-3 py-2.5 rounded-xl text-xs font-medium cursor-pointer flex items-center gap-1 active:scale-95 transition"
+                            >
+                              📲 WA
+                            </button>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => openQris(r)}
+                            className="flex-1 bg-[#7C3AED] hover:bg-[#6D28D9] text-white py-2.5 rounded-xl text-xs font-bold transition cursor-pointer shadow-lg shadow-[#7C3AED]/25 active:scale-95 flex items-center justify-center gap-1.5"
+                          >
+                            ⚡ Bayar QRIS Sekarang
+                          </button>
+                          {isAdmin && (
                             <>
                               <button
-                                onClick={() => handleOpenKwitansi(r)}
-                                className="text-[11px] bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-lg text-slate-200 transition cursor-pointer flex items-center gap-1 active:scale-95"
+                                onClick={() => handleSendWaTagihan(r)}
+                                title="Kirim Tagihan ke WhatsApp Warga"
+                                className="bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-300 px-3 py-2.5 rounded-xl text-xs font-medium cursor-pointer flex items-center gap-1 active:scale-95 transition"
                               >
-                                📄 Kwitansi
+                                📲 WA
                               </button>
-                              {isAdmin && (
-                                <button
-                                  onClick={() => handleSendWaKwitansi(r)}
-                                  title="Kirim Kwitansi Lunas ke WhatsApp Warga"
-                                  className="text-[11px] bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 px-2.5 py-1.5 rounded-lg font-medium transition cursor-pointer flex items-center gap-1 active:scale-95"
-                                >
-                                  📲 WA
-                                </button>
-                              )}
-                            </>
-                          ) : (
-                            <>
-                              {isAdmin && (
-                                <>
-                                  <button
-                                    onClick={() => handleSendWaTagihan(r)}
-                                    title="Kirim Tagihan ke WhatsApp Warga"
-                                    className="text-[11px] bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 px-2.5 py-1.5 rounded-lg font-medium transition cursor-pointer flex items-center gap-1 active:scale-95"
-                                  >
-                                    📲 WA
-                                  </button>
-                                  <button
-                                    onClick={() => handleMarkLunas(r, 'Tunai / Pengurus')}
-                                    className="text-[11px] bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1.5 rounded-lg font-medium transition cursor-pointer shadow-sm active:scale-95"
-                                  >
-                                    ✓ Set Lunas
-                                  </button>
-                                </>
-                              )}
                               <button
-                                onClick={() => openQris(r)}
-                                className="text-[11px] bg-[#7C3AED] hover:bg-[#6D28D9] text-white px-3.5 py-1.5 rounded-lg font-semibold transition cursor-pointer shadow-sm shadow-[#7C3AED]/20 active:scale-95"
+                                onClick={() => handleMarkLunas(r, 'Tunai / Pengurus')}
+                                className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2.5 rounded-xl text-xs font-medium cursor-pointer active:scale-95 transition"
                               >
-                                ⚡ Bayar QRIS
+                                ✓ Set Lunas
                               </button>
                             </>
                           )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                        </>
+                      )}
+                      {isAdmin && (
+                        <button
+                          onClick={() => handleDeleteTagihan(r)}
+                          title="Hapus Tagihan"
+                          className="text-slate-400 hover:text-rose-400 p-2.5 rounded-xl hover:bg-rose-500/10 transition cursor-pointer text-xs"
+                        >
+                          🗑️
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
 

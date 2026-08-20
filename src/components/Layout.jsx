@@ -64,23 +64,42 @@ export default function Layout({ children }) {
       <header className="sticky top-0 z-40 bg-[#0B0E1A]/90 backdrop-blur border-b border-white/10 print:hidden">
         <div className="max-w-[1600px] mx-auto px-4 h-[64px] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#7C3AED] to-[#4F46E5] flex items-center justify-center font-bold text-white">RT</div>
-            <div>
-              <h1 className="font-bold text-white text-[14px]">Halo, {profile.nama} 👋</h1>
-              <p className="text-[11px] text-slate-400">{profile.blok} • {profile.nama} • RT 09 / RW 14 De Naila Village Blok G</p>
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#7C3AED] to-[#4F46E5] flex items-center justify-center font-bold text-white shrink-0">RT</div>
+            <div className="min-w-0">
+              <h1 className="font-bold text-white text-[14px] truncate">Halo, {profile.nama} 👋</h1>
+              <p className="text-[11px] text-slate-400 truncate">{profile.blok} • RT 09 / RW 14 Blok G</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[11px] bg-white/5 border border-white/10 px-3 py-1 rounded-full">{profile.role}</span>
-            <button onClick={logout} className="text-[12px] bg-white/5 border border-white/10 px-4 py-2 rounded-full cursor-pointer">Logout</button>
+            <span className="text-[11px] bg-white/5 border border-white/10 px-2.5 py-1 rounded-full text-slate-300 font-mono hidden sm:inline-block">{profile.role}</span>
+            <button onClick={logout} className="text-[12px] bg-white/5 hover:bg-rose-500/20 hover:text-rose-300 hover:border-rose-500/30 border border-white/10 px-3.5 py-1.5 rounded-full cursor-pointer transition">Logout</button>
           </div>
         </div>
       </header>
 
-      <div className="max-w-[1600px] mx-auto p-4 grid grid-cols-12 gap-5 print:block print:p-0 print:m-0 print:w-full print:max-w-none">
+      <div className="max-w-[1600px] mx-auto p-3 sm:p-4 grid grid-cols-12 gap-3 sm:gap-5 print:block print:p-0 print:m-0 print:w-full print:max-w-none">
         {/* Sidebar - Sembunyikan Saat Print */}
         <aside className="col-span-12 lg:col-span-2 print:hidden">
-          <div className="bg-[#1A1D2E] border border-white/10 rounded-[24px] p-3 sticky top-[84px]">
+          {/* Mobile Horizontal Pill Navigation (Only on mobile < lg) */}
+          <div className="lg:hidden bg-[#1A1D2E] border border-white/10 rounded-2xl p-2 mb-1 overflow-x-auto flex items-center gap-1.5 whitespace-nowrap shadow-lg">
+            {menu.filter(m => !m.adminOnly || isAdmin).map(m => {
+              const active = location.pathname === m.path;
+              return (
+                <Link
+                  key={m.id}
+                  to={m.path}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 shrink-0 ${
+                    active ? 'bg-[#7C3AED] text-white shadow-md shadow-[#7C3AED]/25' : 'bg-white/5 hover:bg-white/10 text-slate-300'
+                  }`}
+                >
+                  {m.label}
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Desktop Vertical Navigation (lg screens) */}
+          <div className="hidden lg:block bg-[#1A1D2E] border border-white/10 rounded-[24px] p-3 sticky top-[84px]">
             <p className="text-[10px] text-slate-500 font-semibold tracking-widest px-3 mb-3">MENU {profile.role === 'warga' ? 'WARGA' : 'ADMIN'}</p>
             <nav className="space-y-1">
               {menu.filter(m => !m.adminOnly || isAdmin).map(m => {
