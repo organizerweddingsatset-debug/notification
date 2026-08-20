@@ -26,7 +26,7 @@ export default function Pengaturan() {
   // 2. SUPABASE CLOUD CONNECTION CONFIG
   const [supabaseCreds, setSupabaseCreds] = useState({
     url: localStorage.getItem('rt_supabase_url') || import.meta.env.VITE_SUPABASE_URL || 'https://kowupldtuweztpzhatvg.supabase.co',
-    anonKey: localStorage.getItem('rt_supabase_anon_key') || import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtvd3VwbGR0dXdlenRwemhhdHZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY4NjY5NjQsImV4cCI6MjA1MjQ0Mjk2NH0.Qs2p1lB4a6g1k3Z8x9y0'
+    anonKey: localStorage.getItem('rt_supabase_anon_key') || import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtvd3VwbGR0dXdlenRwemhhdHZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxMDU4NjksImV4cCI6MjEwMTY4MTg2OX0.0K4ll5wDNB-aY_0Wis5RWm61k7YjhsF8h3b-v5Al7WA'
   });
   const [dbStatus, setDbStatus] = useState({ tested: false, connected: false, message: 'Belum diuji', tables: {} });
   const [isTestingDb, setIsTestingDb] = useState(false);
@@ -226,7 +226,7 @@ export default function Pengaturan() {
     showToastMsg('Konfigurasi QRIS & Rekening Kas RT 09 berhasil diperbarui!');
   };
 
-  const handleQrisUpload = (e) => {
+  const handleUploadQrisImage = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
