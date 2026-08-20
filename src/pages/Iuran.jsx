@@ -69,6 +69,60 @@ export default function Iuran() {
   const [selectedKwitansi, setSelectedKwitansi] = useState(null);
   const [toast, setToast] = useState(null);
 
+  // MODAL BUAT TAGIHAN
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showMassalModal, setShowMassalModal] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  // Form Buat Tagihan Satuan
+  const [singleForm, setSingleForm] = useState({
+    wargaIdx: 0,
+    kategori: 'Iuran Kebersihan & Sampah',
+    kategoriCustom: '',
+    bulanNama: 'Agustus',
+    tahun: '2026',
+    nominal: 50000,
+    sendWa: true
+  });
+
+  // Form Generate Massal
+  const [massalForm, setMassalForm] = useState({
+    paketType: 'paket_lengkap', // 'paket_lengkap' | 'keamanan' | 'kebersihan' | 'sosial' | 'listrik' | 'custom'
+    namaTagihan: 'Iuran Wajib RT 09 (Kebersihan & Keamanan)',
+    bulanNama: 'Agustus',
+    tahun: '2026',
+    nominal: 125000,
+    sendWa: true
+  });
+
+  // Data Warga Aktif
+  const [wargaList, setWargaList] = useState([]);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('rt_all_warga_profiles');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setWargaList(parsed);
+          return;
+        }
+      }
+    } catch (e) {}
+
+    // Fallback default warga RT 09
+    setWargaList([
+      { nama_lengkap: 'Daniel Kristianto', blok_rumah: 'G-12', no_whatsapp: '0812-3456-7890', nik: '3525121405920001' },
+      { nama_lengkap: 'Budi Santoso', blok_rumah: 'G-10', no_whatsapp: '0812-1111-2222', nik: '3525121102880005' },
+      { nama_lengkap: 'Ahmad Fauzi', blok_rumah: 'G-08', no_whatsapp: '0812-5555-4444', nik: '3525121903930004' },
+      { nama_lengkap: 'Siti Rahmawati', blok_rumah: 'G-05', no_whatsapp: '0812-9876-5432', nik: '3525122509890003' },
+      { nama_lengkap: 'Hendra Gunawan', blok_rumah: 'G-01', no_whatsapp: '0813-2222-3333', nik: '3525120101850002' },
+      { nama_lengkap: 'Rudi Hartono', blok_rumah: 'G-03', no_whatsapp: '0813-4444-5555', nik: '3525120303860003' },
+      { nama_lengkap: 'Eko Prasetyo', blok_rumah: 'G-07', no_whatsapp: '0813-6666-7777', nik: '3525120707880005' },
+      { nama_lengkap: 'Agus Setiawan', blok_rumah: 'G-09', no_whatsapp: '0813-8888-9999', nik: '3525120909900007' }
+    ]);
+  }, []);
+
   // Realtime Cross-tab Sync
   useEffect(() => {
     const handleStorageChange = (e) => {
@@ -90,6 +144,108 @@ export default function Iuran() {
   const persistTagihan = (newList) => {
     setTagihanList(newList);
     localStorage.setItem('rt_tagihan_iuran_list', JSON.stringify(newList));
+  };
+
+  // Handler Buat Tagihan Satuan
+  const handleCreateSingleSubmit = async (e) => {
+    e.preventDefault();
+    const selectedWarga = wargaList[singleForm.wargaIdx] || wargaList[0];
+    const namaTagihan = singleForm.kategori === 'custom' ? singleForm.kategoriCustom : singleForm.kategori;
+    const periodeBulan = `${singleForm.bulanNama} ${singleForm.tahun}`;
+
+    const newTagihan = {
+      id: `tag-${Date.now()}-${Math.floor(Math.random()*1000)}`,
+      nama: selectedWarga.nama_lengkap,
+      blok: selectedWarga.blok_rumah,
+      nik: selectedWarga.nik || '-',
+      tagihan: namaTagihan || 'Iuran Warga RT 09',
+      bulan: periodeBulan,
+      bulanNama: singleForm.bulanNama,
+      tahun: singleForm.tahun,
+      nominal: Number(singleForm.nominal) || 50000,
+      status: 'Belum Lunas',
+      no_kwitansi: '-',
+      tgl_bayar: '-',
+      tgl_bayar_short: '-',
+      metode: '-'
+    };
+
+    const updated = [newTagihan, ...tagihanList];
+    persistTagihan(updated);
+    setShowCreateModal(false);
+    showToastMsg(`✅ Tagihan ${newTagihan.tagihan} (${fmt(newTagihan.nominal)}) berhasil dibuat untuk ${newTagihan.nama}!`);
+
+    // Kirim notifikasi WA jika dicentang
+    if (singleForm.sendWa) {
+      handleSendWaTagihan(newTagihan);
+    }
+  };
+
+  // Handler Generate Massal
+  const handleGenerateMassalSubmit = async (e) => {
+    e.preventDefault();
+    setIsGenerating(true);
+    const periodeBulan = `${massalForm.bulanNama} ${massalForm.tahun}`;
+    const generatedList = [];
+
+    wargaList.forEach(w => {
+      // Cek apakah sudah ada tagihan yang sama persis untuk warga ini di bulan ini
+      const alreadyExists = tagihanList.some(t => 
+        t.nama.toLowerCase() === w.nama_lengkap.toLowerCase() &&
+        t.tagihan.toLowerCase() === massalForm.namaTagihan.toLowerCase() &&
+        t.bulan.toLowerCase() === periodeBulan.toLowerCase()
+      );
+
+      if (!alreadyExists) {
+        generatedList.push({
+          id: `tag-mass-${Date.now()}-${w.blok_rumah}-${Math.floor(Math.random()*1000)}`,
+          nama: w.nama_lengkap,
+          blok: w.blok_rumah,
+          nik: w.nik || '-',
+          tagihan: massalForm.namaTagihan,
+          bulan: periodeBulan,
+          bulanNama: massalForm.bulanNama,
+          tahun: massalForm.tahun,
+          nominal: Number(massalForm.nominal) || 125000,
+          status: 'Belum Lunas',
+          no_kwitansi: '-',
+          tgl_bayar: '-',
+          tgl_bayar_short: '-',
+          metode: '-'
+        });
+      }
+    });
+
+    if (generatedList.length === 0) {
+      setIsGenerating(false);
+      setShowMassalModal(false);
+      showToastMsg(`ℹ️ Tagihan ${massalForm.namaTagihan} periode ${periodeBulan} sudah pernah diterbitkan untuk semua warga.`);
+      return;
+    }
+
+    const updated = [...generatedList, ...tagihanList];
+    persistTagihan(updated);
+    setIsGenerating(false);
+    setShowMassalModal(false);
+    showToastMsg(`🎉 Berhasil menerbitkan ${generatedList.length} tagihan ${massalForm.namaTagihan} periode ${periodeBulan}!`);
+
+    // Broadcast WA jika dicentang
+    if (massalForm.sendWa) {
+      showToastMsg(`📲 Mengirimkan notifikasi tagihan WhatsApp ke ${generatedList.length} warga secara serentak...`);
+      for (const item of generatedList) {
+        await handleSendWaTagihan(item);
+        await new Promise(r => setTimeout(r, 600)); // safe delay
+      }
+    }
+  };
+
+  // Handler Hapus Tagihan
+  const handleDeleteTagihan = (item) => {
+    if (confirm(`Apakah Anda yakin ingin menghapus tagihan "${item.tagihan}" untuk ${item.nama} (${item.bulan})?`)) {
+      const updated = tagihanList.filter(t => t.id !== item.id);
+      persistTagihan(updated);
+      showToastMsg(`Tagihan "${item.tagihan}" untuk ${item.nama} berhasil dihapus.`);
+    }
   };
 
   // Helper cari nomor WhatsApp warga
@@ -330,7 +486,7 @@ export default function Iuran() {
         {/* SCREEN VIEW (UI LIST & MANAGEMENT)                       */}
         {/* ========================================================= */}
         <div className="print:hidden space-y-5">
-          <div className="bg-[#1A1D2E] border border-white/10 rounded-[24px] p-6 flex justify-between items-center">
+          <div className="bg-[#1A1D2E] border border-white/10 rounded-[24px] p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[11px] bg-[#7C3AED]/15 text-[#A78BFA] border border-[#7C3AED]/20 px-3 py-1 rounded-full font-medium">
@@ -357,6 +513,23 @@ export default function Iuran() {
                 </div>
               )}
             </div>
+
+            {isAdmin && (
+              <div className="flex flex-wrap items-center gap-2.5">
+                <button
+                  onClick={() => setShowCreateModal(true)}
+                  className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white px-4 py-2.5 rounded-xl text-xs font-semibold cursor-pointer shadow-lg shadow-[#7C3AED]/25 active:scale-95 transition flex items-center gap-1.5"
+                >
+                  <span>➕</span> Buat Tagihan Satuan
+                </button>
+                <button
+                  onClick={() => setShowMassalModal(true)}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-xs font-semibold cursor-pointer shadow-lg shadow-emerald-600/25 active:scale-95 transition flex items-center gap-1.5"
+                >
+                  <span>⚡</span> Generate Iuran Massal
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Toast Notification */}
@@ -664,6 +837,322 @@ export default function Iuran() {
                   Tutup
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* MODAL: BUAT TAGIHAN SATUAN                               */}
+        {/* ========================================================= */}
+        {showCreateModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowCreateModal(false)}></div>
+            <div className="relative z-10 bg-[#1A1D2E] border border-white/10 rounded-[24px] p-6 w-full max-w-[480px] shadow-2xl space-y-4 text-xs">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-8 h-8 rounded-xl bg-[#7C3AED]/20 text-[#A78BFA] flex items-center justify-center font-bold text-sm">
+                    ➕
+                  </span>
+                  <div>
+                    <h3 className="font-bold text-white text-[15px]">Buat Tagihan Iuran Warga</h3>
+                    <p className="text-[11px] text-slate-400">Terbitkan tagihan iuran satuan untuk kepala keluarga / warga</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-white text-lg">✕</button>
+              </div>
+
+              <form onSubmit={handleCreateSingleSubmit} className="space-y-3.5">
+                {/* Pilih Warga */}
+                <div className="space-y-1">
+                  <label className="text-[11px] text-slate-400 font-medium">Pilih Warga / Kepala Keluarga (Blok G):</label>
+                  <select
+                    value={singleForm.wargaIdx}
+                    onChange={(e) => setSingleForm({ ...singleForm, wargaIdx: Number(e.target.value) })}
+                    className="w-full bg-[#23263A] border border-white/10 rounded-xl px-3 py-2.5 text-white font-medium outline-none focus:border-[#7C3AED] cursor-pointer"
+                  >
+                    {wargaList.map((w, idx) => (
+                      <option key={idx} value={idx}>
+                        {w.nama_lengkap} (Blok {w.blok_rumah}) - {w.no_whatsapp || '-'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Jenis Tagihan */}
+                <div className="space-y-1">
+                  <label className="text-[11px] text-slate-400 font-medium">Jenis Iuran / Tagihan:</label>
+                  <select
+                    value={singleForm.kategori}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      let nom = singleForm.nominal;
+                      if (val === 'Iuran Kebersihan & Sampah') nom = 50000;
+                      if (val === 'Iuran Keamanan & Satpam') nom = 75000;
+                      if (val === 'Iuran Paket Lengkap (Kebersihan + Keamanan)') nom = 125000;
+                      if (val === 'Kas Sosial RT 09') nom = 30000;
+                      if (val === 'Iuran Listrik Pos & Taman') nom = 25000;
+                      setSingleForm({ ...singleForm, kategori: val, nominal: nom });
+                    }}
+                    className="w-full bg-[#23263A] border border-white/10 rounded-xl px-3 py-2.5 text-white font-medium outline-none focus:border-[#7C3AED] cursor-pointer"
+                  >
+                    <option value="Iuran Kebersihan & Sampah">🧹 Iuran Kebersihan & Sampah (Rp 50.000)</option>
+                    <option value="Iuran Keamanan & Satpam">🛡️ Iuran Keamanan & Satpam (Rp 75.000)</option>
+                    <option value="Iuran Paket Lengkap (Kebersihan + Keamanan)">🌟 Iuran Paket Lengkap Kebersihan & Keamanan (Rp 125.000)</option>
+                    <option value="Kas Sosial RT 09">🤝 Kas Sosial RT 09 (Rp 30.000)</option>
+                    <option value="Iuran Listrik Pos & Taman">💡 Iuran Listrik Pos & Taman (Rp 25.000)</option>
+                    <option value="Iuran Kegiatan Warga / Agustusan">🎉 Iuran Kegiatan / HUT RI / Agustusan</option>
+                    <option value="custom">✏️ Kategori Lainnya (Ketik Manual)...</option>
+                  </select>
+                </div>
+
+                {singleForm.kategori === 'custom' && (
+                  <div className="space-y-1">
+                    <label className="text-[11px] text-slate-400 font-medium">Nama Iuran Custom:</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Contoh: Iuran Perbaikan Paving Blok G"
+                      value={singleForm.kategoriCustom}
+                      onChange={(e) => setSingleForm({ ...singleForm, kategoriCustom: e.target.value })}
+                      className="w-full bg-[#23263A] border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-[#7C3AED]"
+                    />
+                  </div>
+                )}
+
+                {/* Periode Bulan & Tahun */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-[11px] text-slate-400 font-medium">Bulan Periode:</label>
+                    <select
+                      value={singleForm.bulanNama}
+                      onChange={(e) => setSingleForm({ ...singleForm, bulanNama: e.target.value })}
+                      className="w-full bg-[#23263A] border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-[#7C3AED] cursor-pointer"
+                    >
+                      {['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'].map((m) => (
+                        <option key={m} value={m}>{m}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[11px] text-slate-400 font-medium">Tahun:</label>
+                    <input
+                      type="number"
+                      value={singleForm.tahun}
+                      onChange={(e) => setSingleForm({ ...singleForm, tahun: e.target.value })}
+                      className="w-full bg-[#23263A] border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-[#7C3AED] font-mono"
+                    />
+                  </div>
+                </div>
+
+                {/* Nominal */}
+                <div className="space-y-1">
+                  <label className="text-[11px] text-slate-400 font-medium">Nominal Tagihan (Rp):</label>
+                  <input
+                    type="number"
+                    required
+                    min="1000"
+                    step="5000"
+                    value={singleForm.nominal}
+                    onChange={(e) => setSingleForm({ ...singleForm, nominal: Number(e.target.value) })}
+                    className="w-full bg-[#23263A] border border-white/10 rounded-xl px-3 py-2 text-emerald-400 font-mono font-bold text-sm outline-none focus:border-emerald-500"
+                  />
+                </div>
+
+                {/* Checkbox Kirim WA */}
+                <div className="bg-[#23263A]/80 border border-emerald-500/20 rounded-xl p-3 flex items-center gap-2.5">
+                  <input
+                    type="checkbox"
+                    id="singleSendWa"
+                    checked={singleForm.sendWa}
+                    onChange={(e) => setSingleForm({ ...singleForm, sendWa: e.target.checked })}
+                    className="w-4 h-4 rounded text-emerald-600 accent-emerald-600 cursor-pointer"
+                  />
+                  <label htmlFor="singleSendWa" className="text-[11px] text-slate-300 cursor-pointer select-none">
+                    📲 <strong>Kirim notifikasi rincian tagihan WhatsApp</strong> ke warga secara instan setelah diterbitkan.
+                  </label>
+                </div>
+
+                <div className="pt-2 flex gap-2">
+                  <button
+                    type="submit"
+                    className="flex-1 bg-[#7C3AED] hover:bg-[#6D28D9] text-white py-2.5 rounded-xl font-semibold transition cursor-pointer shadow-lg shadow-[#7C3AED]/25 active:scale-95 flex items-center justify-center gap-1.5"
+                  >
+                    💾 Terbitkan Tagihan Warga
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateModal(false)}
+                    className="bg-white/10 hover:bg-white/20 text-slate-300 px-4 py-2.5 rounded-xl font-medium cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* MODAL: GENERATE IURAN BULANAN MASSAL (SEMUA WARGA)        */}
+        {/* ========================================================= */}
+        {showMassalModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm" onClick={() => !isGenerating && setShowMassalModal(false)}></div>
+            <div className="relative z-10 bg-[#1A1D2E] border border-white/10 rounded-[24px] p-6 w-full max-w-[520px] shadow-2xl space-y-4 text-xs">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-sm">
+                    ⚡
+                  </span>
+                  <div>
+                    <h3 className="font-bold text-white text-[15px]">Generate Iuran Bulanan Massal</h3>
+                    <p className="text-[11px] text-slate-400">Terbitkan tagihan bulanan serentak untuk seluruh warga aktif Blok G</p>
+                  </div>
+                </div>
+                {!isGenerating && (
+                  <button onClick={() => setShowMassalModal(false)} className="text-slate-400 hover:text-white text-lg">✕</button>
+                )}
+              </div>
+
+              <form onSubmit={handleGenerateMassalSubmit} className="space-y-3.5">
+                {/* Target Warga Preview */}
+                <div className="bg-[#23263A] border border-white/10 rounded-xl p-3 flex items-center justify-between">
+                  <div>
+                    <div className="text-white font-semibold text-xs">Target Penerima:</div>
+                    <div className="text-[11px] text-slate-400">Seluruh Warga Aktif RT 09 De Naila Village</div>
+                  </div>
+                  <span className="bg-[#7C3AED]/20 text-[#A78BFA] border border-[#7C3AED]/30 px-3 py-1 rounded-full font-bold font-mono text-xs">
+                    {wargaList.length} Kepala Keluarga
+                  </span>
+                </div>
+
+                {/* Pilih Paket Iuran */}
+                <div className="space-y-1">
+                  <label className="text-[11px] text-slate-400 font-medium">Pilih Paket Tagihan Bulanan:</label>
+                  <select
+                    value={massalForm.paketType}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      let nama = massalForm.namaTagihan;
+                      let nom = massalForm.nominal;
+                      if (val === 'paket_lengkap') {
+                        nama = 'Iuran Wajib RT 09 (Kebersihan & Keamanan)';
+                        nom = 125000;
+                      } else if (val === 'keamanan') {
+                        nama = 'Iuran Keamanan & Satpam';
+                        nom = 75000;
+                      } else if (val === 'kebersihan') {
+                        nama = 'Iuran Kebersihan & Sampah';
+                        nom = 50000;
+                      } else if (val === 'sosial') {
+                        nama = 'Kas Sosial RT 09';
+                        nom = 30000;
+                      } else if (val === 'listrik') {
+                        nama = 'Iuran Listrik Pos & Taman';
+                        nom = 25000;
+                      }
+                      setMassalForm({ ...massalForm, paketType: val, namaTagihan: nama, nominal: nom });
+                    }}
+                    className="w-full bg-[#23263A] border border-white/10 rounded-xl px-3 py-2.5 text-white font-medium outline-none focus:border-emerald-500 cursor-pointer"
+                  >
+                    <option value="paket_lengkap">🌟 Paket Standar RT 09 (Kebersihan + Keamanan: Rp 125.000)</option>
+                    <option value="keamanan">🛡️ Iuran Keamanan & Satpam Saja (Rp 75.000)</option>
+                    <option value="kebersihan">🧹 Iuran Kebersihan & Sampah Saja (Rp 50.000)</option>
+                    <option value="sosial">🤝 Kas Sosial RT 09 (Rp 30.000)</option>
+                    <option value="listrik">💡 Listrik Fasum & Lampu Taman (Rp 25.000)</option>
+                    <option value="custom">✏️ Custom Nama & Nominal...</option>
+                  </select>
+                </div>
+
+                {massalForm.paketType === 'custom' && (
+                  <div className="space-y-1">
+                    <label className="text-[11px] text-slate-400 font-medium">Judul Tagihan Custom:</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Contoh: Iuran HUT RI ke-81"
+                      value={massalForm.namaTagihan}
+                      onChange={(e) => setMassalForm({ ...massalForm, namaTagihan: e.target.value })}
+                      className="w-full bg-[#23263A] border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                )}
+
+                {/* Periode Bulan & Tahun */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-[11px] text-slate-400 font-medium">Periode Bulan Tagihan:</label>
+                    <select
+                      value={massalForm.bulanNama}
+                      onChange={(e) => setMassalForm({ ...massalForm, bulanNama: e.target.value })}
+                      className="w-full bg-[#23263A] border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-emerald-500 cursor-pointer font-medium"
+                    >
+                      {['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'].map((m) => (
+                        <option key={m} value={m}>{m}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[11px] text-slate-400 font-medium">Tahun:</label>
+                    <input
+                      type="number"
+                      value={massalForm.tahun}
+                      onChange={(e) => setMassalForm({ ...massalForm, tahun: e.target.value })}
+                      className="w-full bg-[#23263A] border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-emerald-500 font-mono"
+                    />
+                  </div>
+                </div>
+
+                {/* Nominal per Warga */}
+                <div className="space-y-1">
+                  <label className="text-[11px] text-slate-400 font-medium">Nominal per Warga (Rp):</label>
+                  <input
+                    type="number"
+                    required
+                    min="1000"
+                    step="5000"
+                    value={massalForm.nominal}
+                    onChange={(e) => setMassalForm({ ...massalForm, nominal: Number(e.target.value) })}
+                    className="w-full bg-[#23263A] border border-white/10 rounded-xl px-3 py-2 text-emerald-400 font-mono font-bold text-sm outline-none focus:border-emerald-500"
+                  />
+                  <div className="text-[10px] text-slate-400 text-right pt-0.5">
+                    Estimasi Total Kas Masuk: <strong className="text-white font-mono">{fmt(massalForm.nominal * wargaList.length)}</strong>
+                  </div>
+                </div>
+
+                {/* Checkbox Broadcast WA */}
+                <div className="bg-[#23263A]/80 border border-emerald-500/20 rounded-xl p-3 flex items-center gap-2.5">
+                  <input
+                    type="checkbox"
+                    id="massalSendWa"
+                    checked={massalForm.sendWa}
+                    onChange={(e) => setMassalForm({ ...massalForm, sendWa: e.target.checked })}
+                    className="w-4 h-4 rounded text-emerald-600 accent-emerald-600 cursor-pointer"
+                  />
+                  <label htmlFor="massalSendWa" className="text-[11px] text-slate-300 cursor-pointer select-none">
+                    📲 <strong>Broadcast notifikasi rincian tagihan WhatsApp</strong> ke seluruh nomor HP warga secara serentak.
+                  </label>
+                </div>
+
+                <div className="pt-2 flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={isGenerating}
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl font-semibold transition cursor-pointer shadow-lg shadow-emerald-600/25 active:scale-95 flex items-center justify-center gap-1.5"
+                  >
+                    {isGenerating ? '⏳ Menerbitkan...' : `⚡ Terbitkan Tagihan ke ${wargaList.length} Warga`}
+                  </button>
+                  {!isGenerating && (
+                    <button
+                      type="button"
+                      onClick={() => setShowMassalModal(false)}
+                      className="bg-white/10 hover:bg-white/20 text-slate-300 px-4 py-2.5 rounded-xl font-medium cursor-pointer"
+                    >
+                      Batal
+                    </button>
+                  )}
+                </div>
+              </form>
             </div>
           </div>
         )}
