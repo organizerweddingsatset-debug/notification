@@ -1,16 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import Layout from '../components/Layout';
 import { supabase } from '../supabaseClient';
+import { getWargaCredentials } from '../utils/formatters';
 
-// Helper to generate credentials according to RT 09 rule:
-// Nama: Daniel Fajarsyah, Blok: G-43 -> username: danielG43, password: danielG43
-export function getWargaCredentials(nama, blok) {
-  if (!nama) return { username: 'wargaG00', password: 'wargaG00' };
-  const firstWord = nama.trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-  const cleanBlok = (blok || 'G00').toUpperCase().replace(/[^A-Z0-9]/g, '');
-  const cred = `${firstWord}${cleanBlok}`;
-  return { username: cred, password: cred };
-}
+export { getWargaCredentials };
 
 // Data Default Master Warga RT 09 (De Naila Village)
 const INITIAL_WARGA_LIST = [
@@ -1112,18 +1105,23 @@ export default function Warga() {
 
                     <div className="grid md:grid-cols-3 gap-4">
                       <div>
-                        <label className="text-[11px] text-slate-400">Nama Lengkap (KTP) *</label>
+                        <label htmlFor="bio-nama-lengkap" className="text-[11px] text-slate-400">Nama Lengkap (KTP) *</label>
                         <input
+                          id="bio-nama-lengkap"
+                          name="nama_lengkap"
                           type="text"
                           required
+                          autoComplete="name"
                           value={formData.nama_lengkap || formData.namaLengkap || ''}
                           onChange={(e) => setFormData({ ...formData, nama_lengkap: e.target.value, namaLengkap: e.target.value })}
                           className="w-full mt-1 bg-[#23263A] border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-[13px] outline-none focus:border-[#7C3AED]"
                         />
                       </div>
                       <div>
-                        <label className="text-[11px] text-slate-400">NIK (Nomor Induk Kependudukan)</label>
+                        <label htmlFor="bio-nik" className="text-[11px] text-slate-400">NIK (Nomor Induk Kependudukan)</label>
                         <input
+                          id="bio-nik"
+                          name="nik"
                           type="text"
                           value={formData.nik || ''}
                           onChange={(e) => setFormData({ ...formData, nik: e.target.value })}
@@ -1131,8 +1129,10 @@ export default function Warga() {
                         />
                       </div>
                       <div>
-                        <label className="text-[11px] text-slate-400">Nomor Kartu Keluarga (KK)</label>
+                        <label htmlFor="bio-no-kk" className="text-[11px] text-slate-400">Nomor Kartu Keluarga (KK)</label>
                         <input
+                          id="bio-no-kk"
+                          name="no_kk"
                           type="text"
                           value={formData.no_kk || formData.noKk || ''}
                           onChange={(e) => setFormData({ ...formData, no_kk: e.target.value, noKk: e.target.value })}
@@ -1141,8 +1141,10 @@ export default function Warga() {
                       </div>
 
                       <div>
-                        <label className="text-[11px] text-slate-400">Tempat Lahir</label>
+                        <label htmlFor="bio-tempat-lahir" className="text-[11px] text-slate-400">Tempat Lahir</label>
                         <input
+                          id="bio-tempat-lahir"
+                          name="tempat_lahir"
                           type="text"
                           value={formData.tempat_lahir || formData.tempatLahir || ''}
                           onChange={(e) => setFormData({ ...formData, tempat_lahir: e.target.value, tempatLahir: e.target.value })}
@@ -1150,17 +1152,22 @@ export default function Warga() {
                         />
                       </div>
                       <div>
-                        <label className="text-[11px] text-slate-400">Tanggal Lahir</label>
+                        <label htmlFor="bio-tanggal-lahir" className="text-[11px] text-slate-400">Tanggal Lahir</label>
                         <input
+                          id="bio-tanggal-lahir"
+                          name="tanggal_lahir"
                           type="text"
+                          autoComplete="bday"
                           value={formData.tanggal_lahir || formData.tanggalLahir || ''}
                           onChange={(e) => setFormData({ ...formData, tanggal_lahir: e.target.value, tanggalLahir: e.target.value })}
                           className="w-full mt-1 bg-[#23263A] border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-[13px] outline-none focus:border-[#7C3AED]"
                         />
                       </div>
                       <div>
-                        <label className="text-[11px] text-slate-400">Jenis Kelamin</label>
+                        <label htmlFor="bio-jenis-kelamin" className="text-[11px] text-slate-400">Jenis Kelamin</label>
                         <select
+                          id="bio-jenis-kelamin"
+                          name="jenis_kelamin"
                           value={formData.jenis_kelamin || formData.jenisKelamin || 'Laki-laki'}
                           onChange={(e) => setFormData({ ...formData, jenis_kelamin: e.target.value, jenisKelamin: e.target.value })}
                           className="w-full mt-1 bg-[#23263A] border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-[13px] outline-none focus:border-[#7C3AED]"
@@ -1171,8 +1178,10 @@ export default function Warga() {
                       </div>
 
                       <div>
-                        <label className="text-[11px] text-slate-400">Agama</label>
+                        <label htmlFor="bio-agama" className="text-[11px] text-slate-400">Agama</label>
                         <input
+                          id="bio-agama"
+                          name="agama"
                           type="text"
                           value={formData.agama || ''}
                           onChange={(e) => setFormData({ ...formData, agama: e.target.value })}
@@ -1180,8 +1189,10 @@ export default function Warga() {
                         />
                       </div>
                       <div>
-                        <label className="text-[11px] text-slate-400">Status Perkawinan</label>
+                        <label htmlFor="bio-status-perkawinan" className="text-[11px] text-slate-400">Status Perkawinan</label>
                         <select
+                          id="bio-status-perkawinan"
+                          name="status_perkawinan"
                           value={formData.status_perkawinan || formData.statusKawin || 'Kawin'}
                           onChange={(e) => setFormData({ ...formData, status_perkawinan: e.target.value, statusKawin: e.target.value })}
                           className="w-full mt-1 bg-[#23263A] border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-[13px] outline-none focus:border-[#7C3AED]"
@@ -1193,8 +1204,10 @@ export default function Warga() {
                         </select>
                       </div>
                       <div>
-                        <label className="text-[11px] text-slate-400">Golongan Darah</label>
+                        <label htmlFor="bio-golongan-darah" className="text-[11px] text-slate-400">Golongan Darah</label>
                         <input
+                          id="bio-golongan-darah"
+                          name="golongan_darah"
                           type="text"
                           value={formData.golongan_darah || formData.golDarah || 'O+'}
                           onChange={(e) => setFormData({ ...formData, golongan_darah: e.target.value, golDarah: e.target.value })}
@@ -1203,8 +1216,10 @@ export default function Warga() {
                       </div>
 
                       <div>
-                        <label className="text-[11px] text-slate-400">Pekerjaan</label>
+                        <label htmlFor="bio-pekerjaan" className="text-[11px] text-slate-400">Pekerjaan</label>
                         <input
+                          id="bio-pekerjaan"
+                          name="pekerjaan"
                           type="text"
                           value={formData.pekerjaan || ''}
                           onChange={(e) => setFormData({ ...formData, pekerjaan: e.target.value })}
@@ -1212,17 +1227,22 @@ export default function Warga() {
                         />
                       </div>
                       <div>
-                        <label className="text-[11px] text-slate-400">No. WhatsApp / HP</label>
+                        <label htmlFor="bio-no-whatsapp" className="text-[11px] text-slate-400">No. WhatsApp / HP</label>
                         <input
+                          id="bio-no-whatsapp"
+                          name="no_whatsapp"
                           type="text"
+                          autoComplete="tel"
                           value={formData.no_whatsapp || formData.noHp || ''}
                           onChange={(e) => setFormData({ ...formData, no_whatsapp: e.target.value, noHp: e.target.value })}
                           className="w-full mt-1 bg-[#23263A] border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-[13px] font-mono outline-none focus:border-[#7C3AED]"
                         />
                       </div>
                       <div>
-                        <label className="text-[11px] text-slate-400">Kontak Darurat</label>
+                        <label htmlFor="bio-kontak-darurat" className="text-[11px] text-slate-400">Kontak Darurat</label>
                         <input
+                          id="bio-kontak-darurat"
+                          name="kontak_darurat"
                           type="text"
                           value={formData.kontak_darurat || formData.kontakDarurat || ''}
                           onChange={(e) => setFormData({ ...formData, kontak_darurat: e.target.value, kontakDarurat: e.target.value })}
@@ -1231,8 +1251,10 @@ export default function Warga() {
                       </div>
 
                       <div>
-                        <label className="text-[11px] text-slate-400">Blok Rumah</label>
+                        <label htmlFor="bio-blok-rumah" className="text-[11px] text-slate-400">Blok Rumah</label>
                         <input
+                          id="bio-blok-rumah"
+                          name="blok_rumah"
                           type="text"
                           value={formData.blok_rumah || formData.blokRumah || ''}
                           onChange={(e) => setFormData({ ...formData, blok_rumah: e.target.value, blokRumah: e.target.value })}
@@ -1240,8 +1262,10 @@ export default function Warga() {
                         />
                       </div>
                       <div>
-                        <label className="text-[11px] text-slate-400">Status Tempat Tinggal</label>
+                        <label htmlFor="bio-status-rumah" className="text-[11px] text-slate-400">Status Tempat Tinggal</label>
                         <select
+                          id="bio-status-rumah"
+                          name="status_rumah"
                           value={formData.status_rumah || formData.statusRumah || 'Milik Sendiri (Warga Tetap)'}
                           onChange={(e) => setFormData({ ...formData, status_rumah: e.target.value, statusRumah: e.target.value })}
                           className="w-full mt-1 bg-[#23263A] border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-[13px] outline-none focus:border-[#7C3AED]"
@@ -1252,8 +1276,10 @@ export default function Warga() {
                         </select>
                       </div>
                       <div>
-                        <label className="text-[11px] text-slate-400">Mulai Menetap</label>
+                        <label htmlFor="bio-tahun-menetap" className="text-[11px] text-slate-400">Mulai Menetap</label>
                         <input
+                          id="bio-tahun-menetap"
+                          name="tahun_menetap"
                           type="text"
                           value={formData.tahun_menetap || formData.tahunMenetap || ''}
                           onChange={(e) => setFormData({ ...formData, tahun_menetap: e.target.value, tahunMenetap: e.target.value })}

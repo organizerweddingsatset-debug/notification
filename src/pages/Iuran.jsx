@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import Layout from '../components/Layout';
+import { getTerbilang, formatRupiah } from '../utils/formatters';
 import {
   sendWaMessage,
   openDirectWhatsApp,
@@ -7,32 +8,6 @@ import {
   createKwitansiMessage,
   createReminderTanggal15Message
 } from '../services/whatsappService';
-
-// Fungsi Terbilang Bahasa Indonesia
-function getTerbilang(nominal) {
-  const bilangan = ['', 'Satu', 'Dua', 'Tiga', 'Empat', 'Lima', 'Enam', 'Tujuh', 'Delapan', 'Sembilan', 'Sepuluh', 'Sebelas'];
-  nominal = Math.floor(Math.abs(nominal));
-  if (nominal < 12) {
-    return bilangan[nominal];
-  } else if (nominal < 20) {
-    return getTerbilang(nominal - 10) + ' Belas';
-  } else if (nominal < 100) {
-    return getTerbilang(Math.floor(nominal / 10)) + ' Puluh ' + getTerbilang(nominal % 10);
-  } else if (nominal < 200) {
-    return 'Seratus ' + getTerbilang(nominal - 100);
-  } else if (nominal < 1000) {
-    return getTerbilang(Math.floor(nominal / 100)) + ' Ratus ' + getTerbilang(nominal % 100);
-  } else if (nominal < 2000) {
-    return 'Seribu ' + getTerbilang(nominal - 1000);
-  } else if (nominal < 1000000) {
-    return getTerbilang(Math.floor(nominal / 1000)) + ' Ribu ' + getTerbilang(nominal % 1000);
-  } else if (nominal < 1000000000) {
-    return getTerbilang(Math.floor(nominal / 1000000)) + ' Juta ' + getTerbilang(nominal % 1000000);
-  } else if (nominal < 1000000000000) {
-    return getTerbilang(Math.floor(nominal / 1000000000)) + ' Milyar ' + getTerbilang(nominal % 1000000000);
-  }
-  return '';
-}
 
 const INITIAL_TAGIHAN_LIST = [
   { id: 'tag-1', nama: 'Daniel Kristianto', blok: 'G-12', tagihan: 'Iuran Wajib Bulanan', is_wajib: true, bulan: 'Agustus 2026', bulanNama: 'Agustus', tahun: '2026', nominal: 15000, status: 'Lunas', no_kwitansi: 'KW/RT09-RW14/2026/08/012', tgl_bayar: '14 Agustus 2026', tgl_bayar_short: '14 Agt 2026', metode: 'QRIS', nik: '3525121405920001' },
@@ -1074,8 +1049,10 @@ export default function Iuran() {
               <form onSubmit={handleCreateSingleSubmit} className="space-y-3.5">
                 {/* Pilih Warga */}
                 <div className="space-y-1">
-                  <label className="text-[11px] text-slate-400 font-medium">Pilih Warga / Kepala Keluarga (Blok G):</label>
+                  <label htmlFor="single-warga" className="text-[11px] text-slate-400 font-medium">Pilih Warga / Kepala Keluarga (Blok G):</label>
                   <select
+                    id="single-warga"
+                    name="warga_idx"
                     value={singleForm.wargaIdx}
                     onChange={(e) => setSingleForm({ ...singleForm, wargaIdx: Number(e.target.value) })}
                     className="w-full bg-[#23263A] border border-white/10 rounded-xl px-3 py-2.5 text-white font-medium outline-none focus:border-[#7C3AED] cursor-pointer"
@@ -1090,8 +1067,10 @@ export default function Iuran() {
 
                 {/* Jenis Tagihan */}
                 <div className="space-y-1">
-                  <label className="text-[11px] text-slate-400 font-medium">Jenis Iuran / Tagihan:</label>
+                  <label htmlFor="single-kategori" className="text-[11px] text-slate-400 font-medium">Jenis Iuran / Tagihan:</label>
                   <select
+                    id="single-kategori"
+                    name="kategori"
                     value={singleForm.kategori}
                     onChange={(e) => {
                       const val = e.target.value;
@@ -1110,8 +1089,10 @@ export default function Iuran() {
 
                 {singleForm.kategori === 'custom' && (
                   <div className="space-y-1">
-                    <label className="text-[11px] text-slate-400 font-medium">Nama Iuran Custom:</label>
+                    <label htmlFor="single-kategori-custom" className="text-[11px] text-slate-400 font-medium">Nama Iuran Custom:</label>
                     <input
+                      id="single-kategori-custom"
+                      name="kategori_custom"
                       type="text"
                       required
                       placeholder="Contoh: Iuran Perbaikan Paving Blok G"
@@ -1125,8 +1106,10 @@ export default function Iuran() {
                 {/* Periode Bulan & Tahun */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-[11px] text-slate-400 font-medium">Bulan Periode:</label>
+                    <label htmlFor="single-bulan" className="text-[11px] text-slate-400 font-medium">Bulan Periode:</label>
                     <select
+                      id="single-bulan"
+                      name="bulan_nama"
                       value={singleForm.bulanNama}
                       onChange={(e) => setSingleForm({ ...singleForm, bulanNama: e.target.value })}
                       className="w-full bg-[#23263A] border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-[#7C3AED] cursor-pointer"
@@ -1137,8 +1120,10 @@ export default function Iuran() {
                     </select>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[11px] text-slate-400 font-medium">Tahun:</label>
+                    <label htmlFor="single-tahun" className="text-[11px] text-slate-400 font-medium">Tahun:</label>
                     <input
+                      id="single-tahun"
+                      name="tahun"
                       type="number"
                       value={singleForm.tahun}
                       onChange={(e) => setSingleForm({ ...singleForm, tahun: e.target.value })}
@@ -1149,8 +1134,10 @@ export default function Iuran() {
 
                 {/* Nominal */}
                 <div className="space-y-1">
-                  <label className="text-[11px] text-slate-400 font-medium">Nominal Tagihan (Rp):</label>
+                  <label htmlFor="single-nominal" className="text-[11px] text-slate-400 font-medium">Nominal Tagihan (Rp):</label>
                   <input
+                    id="single-nominal"
+                    name="nominal"
                     type="number"
                     required
                     min="1000"
@@ -1231,8 +1218,10 @@ export default function Iuran() {
 
                 {/* Pilih Paket Iuran */}
                 <div className="space-y-1">
-                  <label className="text-[11px] text-slate-400 font-medium">Pilih Paket Tagihan Bulanan:</label>
+                  <label htmlFor="massal-paket" className="text-[11px] text-slate-400 font-medium">Pilih Paket Tagihan Bulanan:</label>
                   <select
+                    id="massal-paket"
+                    name="paket_type"
                     value={massalForm.paketType}
                     onChange={(e) => {
                       const val = e.target.value;
@@ -1257,8 +1246,10 @@ export default function Iuran() {
 
                 {massalForm.paketType === 'custom' && (
                   <div className="space-y-1">
-                    <label className="text-[11px] text-slate-400 font-medium">Judul Tagihan Custom:</label>
+                    <label htmlFor="massal-nama-tagihan" className="text-[11px] text-slate-400 font-medium">Judul Tagihan Custom:</label>
                     <input
+                      id="massal-nama-tagihan"
+                      name="nama_tagihan"
                       type="text"
                       required
                       placeholder="Contoh: Iuran HUT RI ke-81"
@@ -1272,8 +1263,10 @@ export default function Iuran() {
                 {/* Periode Bulan & Tahun */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-[11px] text-slate-400 font-medium">Periode Bulan Tagihan:</label>
+                    <label htmlFor="massal-bulan" className="text-[11px] text-slate-400 font-medium">Periode Bulan Tagihan:</label>
                     <select
+                      id="massal-bulan"
+                      name="bulan_nama"
                       value={massalForm.bulanNama}
                       onChange={(e) => setMassalForm({ ...massalForm, bulanNama: e.target.value })}
                       className="w-full bg-[#23263A] border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-emerald-500 cursor-pointer font-medium"
@@ -1284,8 +1277,10 @@ export default function Iuran() {
                     </select>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[11px] text-slate-400 font-medium">Tahun:</label>
+                    <label htmlFor="massal-tahun" className="text-[11px] text-slate-400 font-medium">Tahun:</label>
                     <input
+                      id="massal-tahun"
+                      name="tahun"
                       type="number"
                       value={massalForm.tahun}
                       onChange={(e) => setMassalForm({ ...massalForm, tahun: e.target.value })}
@@ -1296,8 +1291,10 @@ export default function Iuran() {
 
                 {/* Nominal per Warga */}
                 <div className="space-y-1">
-                  <label className="text-[11px] text-slate-400 font-medium">Nominal per Warga (Rp):</label>
+                  <label htmlFor="massal-nominal" className="text-[11px] text-slate-400 font-medium">Nominal per Warga (Rp):</label>
                   <input
+                    id="massal-nominal"
+                    name="nominal"
                     type="number"
                     required
                     min="1000"

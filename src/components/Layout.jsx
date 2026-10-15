@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
+import ThemeToggle from './ThemeToggle';
 
 export default function Layout({ children }) {
   const location = useLocation();
@@ -71,6 +72,7 @@ export default function Layout({ children }) {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <span className="text-[11px] bg-white/5 border border-white/10 px-2.5 py-1 rounded-full text-slate-300 font-mono hidden sm:inline-block">{profile.role}</span>
             <button onClick={logout} className="text-[12px] bg-white/5 hover:bg-rose-500/20 hover:text-rose-300 hover:border-rose-500/30 border border-white/10 px-3.5 py-1.5 rounded-full cursor-pointer transition">Logout</button>
           </div>

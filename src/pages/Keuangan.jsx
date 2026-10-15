@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from 'react';
-import * as XLSX from 'xlsx';
 import Layout from '../components/Layout';
 import { supabase } from '../supabaseClient';
 
@@ -417,8 +416,9 @@ export default function Keuangan() {
   // ==========================================
   // 3. EXPORT EXCEL (.XLSX ASLI - PROPER BACKUP)
   // ==========================================
-  const handleExportXLSX = () => {
+  const handleExportXLSX = async () => {
     try {
+      const XLSX = await import('xlsx');
       const wb = XLSX.utils.book_new();
 
       // 1. Sheet 1: BUKU KAS UMUM

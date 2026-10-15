@@ -1,16 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import { getWargaCredentials } from '../utils/formatters';
+import ThemeToggle from '../components/ThemeToggle';
 
-// Helper to generate credentials according to RT 09 rule:
-// Nama: Daniel Fajarsyah, Blok: G-43 -> username: danielG43, password: danielG43
-export function getWargaCredentials(nama, blok) {
-  if (!nama) return { username: 'wargaG00', password: 'wargaG00' };
-  const firstWord = nama.trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-  const cleanBlok = (blok || 'G00').toUpperCase().replace(/[^A-Z0-9]/g, '');
-  const cred = `${firstWord}${cleanBlok}`;
-  return { username: cred, password: cred };
-}
+export { getWargaCredentials };
 
 const PRESET_ACCOUNTS = {
   'admin_rt': {
@@ -135,7 +129,10 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0E1A] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#0B0E1A] flex flex-col items-center justify-center p-4 relative">
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10">
+        <ThemeToggle showLabel={true} />
+      </div>
       <div className="w-full max-w-[420px] bg-[#1A1D2E] border border-white/10 rounded-[24px] p-7 shadow-2xl">
         <div className="text-center mb-6">
           <div className="w-12 h-12 bg-gradient-to-br from-[#7C3AED] to-[#4F46E5] rounded-xl flex items-center justify-center mx-auto font-bold text-white shadow-lg shadow-[#7C3AED]/25">
@@ -151,8 +148,11 @@ export default function Login() {
 
         <form onSubmit={handleLogin} className="space-y-3.5">
           <div>
-            <label className="text-slate-400 text-xs font-medium block mb-1">Username Login</label>
+            <label htmlFor="login-username" className="text-slate-400 text-xs font-medium block mb-1">Username Login</label>
             <input
+              id="login-username"
+              name="username"
+              autoComplete="username"
               required
               value={username}
               onChange={e => setUsername(e.target.value)}
@@ -162,8 +162,11 @@ export default function Login() {
           </div>
 
           <div>
-            <label className="text-slate-400 text-xs font-medium block mb-1">Password</label>
+            <label htmlFor="login-password" className="text-slate-400 text-xs font-medium block mb-1">Password</label>
             <input
+              id="login-password"
+              name="password"
+              autoComplete="current-password"
               required
               value={password}
               onChange={e => setPassword(e.target.value)}

@@ -121,8 +121,12 @@ export default function Dashboard() {
   const totalPengeluaranKas = allKas.filter(k => k.kategori === 'Pengeluaran').reduce((acc, k) => acc + Number(k.nominal || 0), 0);
   const saldoKasRT = totalPemasukanKas - totalPengeluaranKas;
 
-  const pemasukanBulanIni = allKas.filter(k => k.kategori === 'Pemasukan' && (k.tanggal || '').startsWith('2026-08')).reduce((acc, k) => acc + Number(k.nominal || 0), 0);
-  const pengeluaranBulanIni = allKas.filter(k => k.kategori === 'Pengeluaran' && (k.tanggal || '').startsWith('2026-08')).reduce((acc, k) => acc + Number(k.nominal || 0), 0);
+  const currentMonthKey = new Date().toISOString().slice(0, 7);
+  const availableMonths = [...new Set(allKas.map(k => (k.tanggal || '').slice(0, 7)).filter(Boolean))].sort().reverse();
+  const targetMonthKey = availableMonths.includes(currentMonthKey) ? currentMonthKey : (availableMonths[0] || currentMonthKey);
+
+  const pemasukanBulanIni = allKas.filter(k => k.kategori === 'Pemasukan' && (k.tanggal || '').startsWith(targetMonthKey)).reduce((acc, k) => acc + Number(k.nominal || 0), 0);
+  const pengeluaranBulanIni = allKas.filter(k => k.kategori === 'Pengeluaran' && (k.tanggal || '').startsWith(targetMonthKey)).reduce((acc, k) => acc + Number(k.nominal || 0), 0);
 
   const adminTunggakanItems = allTagihan.filter(t => t.status !== 'Lunas');
   const adminTotalTunggakan = adminTunggakanItems.reduce((acc, t) => acc + Number(t.nominal || 0), 0);

@@ -16,9 +16,21 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://kowupldtuweztpzhatvg.supabase.co';
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '';
+const API_SECRET_KEY = process.env.API_SECRET_KEY || '';
 
 app.use(cors({ origin: '*' }));
 app.use(express.json());
+
+// API Security Middleware
+const requireAuth = (req, res, next) => {
+  if (!API_SECRET_KEY) return next();
+  const authHeader = req.headers['authorization'];
+  const token = req.headers['x-api-key'] || (authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null);
+  if (token !== API_SECRET_KEY) {
+    return res.status(401).json({ success: false, error: 'Unauthorized: Invalid or missing API key' });
+  }
+  next();
+};
 
 // Logger
 const logger = pino({ level: 'silent' });
@@ -152,7 +164,7 @@ app.get('/api/wa/status', (req, res) => {
 });
 
 // Force restart connection or generate new QR
-app.post('/api/wa/restart', async (req, res) => {
+app.post('/api/wa/restart', requireAuth, async (req, res) => {
   try {
     if (sock) {
       sock.end(undefined);
@@ -165,7 +177,7 @@ app.post('/api/wa/restart', async (req, res) => {
 });
 
 // Logout / Unlink Device
-app.post('/api/wa/logout', async (req, res) => {
+app.post('/api/wa/logout', requireAuth, async (req, res) => {
   try {
     if (sock) {
       try { await sock.logout(); } catch (e) {}
@@ -186,7 +198,7 @@ app.post('/api/wa/logout', async (req, res) => {
 });
 
 // Send single message
-app.post('/api/wa/send', async (req, res) => {
+app.post('/api/wa/send', requireAuth, async (req, res) => {
   const { to, message } = req.body;
 
   if (!to || !message) {
@@ -213,7 +225,7 @@ app.post('/api/wa/send', async (req, res) => {
 });
 
 // Broadcast message with delay
-app.post('/api/wa/broadcast', async (req, res) => {
+app.post('/api/wa/broadcast', requireAuth, async (req, res) => {
   const { numbers, message, delayMs = 1500 } = req.body;
 
   if (!Array.isArray(numbers) || numbers.length === 0 || !message) {

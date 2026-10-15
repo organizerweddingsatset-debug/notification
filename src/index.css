@@ -1,19 +1,193 @@
 @import "tailwindcss";
 
-body {
-  margin: 0;
-  background: #0B0E1A;
-  color: #E2E8F0;
+:root {
+  color-scheme: dark;
+  --bg-app: #0B0E1A;
+  --bg-card: #1A1D2E;
+  --bg-inner: #23263A;
+  --border-card: rgba(255, 255, 255, 0.1);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --text-main: #F8FAFC;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
+  --header-bg: rgba(11, 14, 26, 0.9);
+  --input-bg: #23263A;
+  --input-border: rgba(255, 255, 255, 0.1);
+  --input-text: #FFFFFF;
 }
 
+html.light {
+  color-scheme: light;
+  --bg-app: #F8FAFC;
+  --bg-card: #FFFFFF;
+  --bg-inner: #F1F5F9;
+  --border-card: #E2E8F0;
+  --border-subtle: #EDF2F7;
+  --text-main: #0F172A;
+  --text-secondary: #334155;
+  --text-muted: #64748B;
+  --header-bg: rgba(255, 255, 255, 0.9);
+  --input-bg: #FFFFFF;
+  --input-border: #CBD5E1;
+  --input-text: #0F172A;
+}
+
+/* Smooth theme transition */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-app);
+  color: var(--text-main);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Base Card Styles */
 .card {
-  background: #1A1D2E;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
   border-radius: 24px;
 }
 
 .card-inner {
-  background: #23263A;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--bg-inner);
+  border: 1px solid var(--border-subtle);
   border-radius: 16px;
+}
+
+/* -------------------------------------------------------------
+ * LIGHT MODE ADAPTATION (Automatic, ultra-clean & high contrast)
+ * ------------------------------------------------------------- */
+html.light body {
+  background: #F8FAFC;
+  color: #0F172A;
+}
+
+html.light .bg-\[\#0B0E1A\] {
+  background-color: #F8FAFC !important;
+}
+
+html.light .bg-\[\#0B0E1A\]\/90 {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  border-bottom-color: #E2E8F0 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+html.light .bg-\[\#1A1D2E\] {
+  background-color: #FFFFFF !important;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+}
+
+html.light .bg-\[\#23263A\] {
+  background-color: #F1F5F9 !important;
+}
+
+html.light .bg-\[\#202438\] {
+  background-color: #F1F5F9 !important;
+}
+
+html.light .text-\[\#E2E8F0\] {
+  color: #0F172A !important;
+}
+
+html.light .border-white\/10,
+html.light .border-white\/5,
+html.light .border-white\/20 {
+  border-color: #E2E8F0 !important;
+}
+
+html.light .bg-white\/5 {
+  background-color: rgba(15, 23, 42, 0.04) !important;
+  color: #334155;
+}
+
+html.light .bg-white\/10 {
+  background-color: rgba(15, 23, 42, 0.08) !important;
+  color: #0F172A;
+}
+
+/* Text adaptations in light mode */
+html.light h1.text-white,
+html.light h2.text-white,
+html.light h3.text-white,
+html.light h4.text-white,
+html.light .font-bold.text-white:not(button *, .bg-\[\#7C3AED\] *, .bg-emerald-600 *, .bg-rose-600 *),
+html.light .font-semibold.text-white:not(button *, .bg-\[\#7C3AED\] *, .bg-emerald-600 *, .bg-rose-600 *) {
+  color: #0F172A !important;
+}
+
+html.light .text-slate-400 {
+  color: #64748B !important;
+}
+
+html.light .text-slate-300 {
+  color: #334155 !important;
+}
+
+html.light .text-slate-500 {
+  color: #64748B !important;
+}
+
+/* Light Mode Input, Textarea & Select */
+html.light input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
+html.light select,
+html.light textarea {
+  background-color: #FFFFFF !important;
+  border-color: #CBD5E1 !important;
+  color: #0F172A !important;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: #94A3B8 !important;
+}
+
+/* Sidebar login profile card in light mode */
+html.light .bg-gradient-to-br.from-\[\#7C3AED\]\/20.to-\[\#1E1B4B\] {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.08) 0%, rgba(241, 245, 249, 0.9) 100%) !important;
+  border-color: rgba(124, 58, 237, 0.15) !important;
+}
+
+html.light .bg-gradient-to-r.from-\[\#1A1D2E\].via-\[\#202438\].to-\[\#1A1D2E\] {
+  background: linear-gradient(90deg, #FFFFFF 0%, #F8FAFC 50%, #FFFFFF 100%) !important;
+  border-color: #E2E8F0 !important;
+}
+
+/* Light mode table row zebra / hover */
+html.light tr:hover {
+  background-color: rgba(15, 23, 42, 0.02) !important;
+}
+
+html.light .bg-\[\#7C3AED\] {
+  background-color: #7C3AED !important;
+  color: #FFFFFF !important;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
 }

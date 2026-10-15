@@ -2,6 +2,8 @@
  * WhatsApp Gateway, Fonnte & Direct Chat Service for Portal RT 09
  */
 
+import { formatIndonesianPhone as formatPhoneUtil, formatRupiah } from '../utils/formatters';
+
 export const getWaGatewayUrl = () => {
   if (typeof window !== 'undefined') {
     const saved = localStorage.getItem('rt_wa_gateway_url');
@@ -16,12 +18,26 @@ export const setWaGatewayUrl = (url) => {
   }
 };
 
+export const getWaApiKey = () => {
+  if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem('rt_wa_api_key');
+    if (saved && saved.trim()) return saved.trim();
+  }
+  return import.meta.env.VITE_WA_API_KEY || '';
+};
+
+export const setWaApiKey = (key) => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('rt_wa_api_key', key.trim());
+  }
+};
+
 export const getFonnteToken = () => {
   if (typeof window !== 'undefined') {
     const saved = localStorage.getItem('rt_fonnte_token');
     if (saved && saved.trim()) return saved.trim();
   }
-  return import.meta.env.VITE_FONNTE_TOKEN || 'kLjCFQkTZrw9gaJJQcDW';
+  return import.meta.env.VITE_FONNTE_TOKEN || '';
 };
 
 export const setFonnteToken = (token) => {
@@ -30,16 +46,17 @@ export const setFonnteToken = (token) => {
   }
 };
 
-// Format phone number to Indonesian international format (e.g. 081234 -> 6281234)
-export const formatIndonesianPhone = (phone) => {
-  if (!phone) return '';
-  let cleaned = String(phone).replace(/\D/g, '');
-  if (cleaned.startsWith('0')) {
-    cleaned = '62' + cleaned.slice(1);
-  } else if (cleaned.startsWith('8')) {
-    cleaned = '628' + cleaned.slice(1);
+// Format phone number to Indonesian international format
+export const formatIndonesianPhone = formatPhoneUtil;
+
+// Helper to construct request headers with optional API Key
+const getHeaders = () => {
+  const apiKey = getWaApiKey();
+  const headers = { 'Content-Type': 'application/json' };
+  if (apiKey) {
+    headers['x-api-key'] = apiKey;
   }
-  return cleaned;
+  return headers;
 };
 
 // Check backend status & QR
@@ -65,7 +82,7 @@ export const checkWaStatus = async () => {
   try {
     const res = await fetch(`${getWaGatewayUrl()}/api/wa/status`, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getHeaders(),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
@@ -78,7 +95,10 @@ export const checkWaStatus = async () => {
 // Restart or regenerate QR
 export const restartWaGateway = async () => {
   try {
-    const res = await fetch(`${getWaGatewayUrl()}/api/wa/restart`, { method: 'POST' });
+    const res = await fetch(`${getWaGatewayUrl()}/api/wa/restart`, {
+      method: 'POST',
+      headers: getHeaders(),
+    });
     return await res.json();
   } catch (err) {
     return { success: false, error: err.message };
@@ -88,7 +108,10 @@ export const restartWaGateway = async () => {
 // Logout WhatsApp session
 export const logoutWaGateway = async () => {
   try {
-    const res = await fetch(`${getWaGatewayUrl()}/api/wa/logout`, { method: 'POST' });
+    const res = await fetch(`${getWaGatewayUrl()}/api/wa/logout`, {
+      method: 'POST',
+      headers: getHeaders(),
+    });
     return await res.json();
   } catch (err) {
     return { success: false, error: err.message };
@@ -125,7 +148,7 @@ export const sendWaMessage = async (to, message) => {
   try {
     const res = await fetch(`${getWaGatewayUrl()}/api/wa/send`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getHeaders(),
       body: JSON.stringify({ to: formattedPhone, message }),
     });
     const data = await res.json();
@@ -151,11 +174,9 @@ export const openDirectWhatsApp = (phone, message) => {
 // -----------------------------------------------------------------------------
 
 export const createTagihanMessage = ({ nama, blok, periode, nominal, rincian = [] }) => {
-  const fmt = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n);
-  
   let rincianText = '';
   if (Array.isArray(rincian) && rincian.length > 0) {
-    rincianText = '\n📋 *Rincian Iuran:* \n' + rincian.map(r => `• ${r.nama || r.kategori}: ${fmt(r.nominal)}`).join('\n');
+    rincianText = '\n📋 *Rincian Iuran:* \n' + rincian.map(r => `• ${r.nama || r.kategori}: ${formatRupiah(r.nominal)}`).join('\n');
   }
 
   return `🔔 *TAGIHAN IURAN WARGA RT 09 / RW 14*
@@ -165,7 +186,7 @@ Yth. Bapak/Ibu *${nama || 'Warga'}* (Blok ${blok || '-'})
 
 Berikut adalah informasi tagihan iuran lingkungan RT 09:
 📅 *Periode:* ${periode || 'Bulan Ini'}
-💰 *Total Tagihan:* *${fmt(nominal)}*${rincianText}
+💰 *Total Tagihan:* *${formatRupiah(nominal)}*${rincianText}
 
 💳 *Metode Pembayaran:*
 1. Scan QRIS Kas RT 09 pada Portal Warga
@@ -179,8 +200,6 @@ _Pesan otomatis dari Sistem Informasi RT 09 De Naila Village_`;
 };
 
 export const createKwitansiMessage = ({ noKwitansi, nama, blok, nominal, tanggal, periode, metode }) => {
-  const fmt = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n);
-
   return `🧾 *BUKTI PEMBAYARAN IURAN LUNAS (KWITANSI SAH)*
 *Rukun Tetangga 09 / RW 14 De Naila Village*
 
@@ -189,7 +208,7 @@ Telah diterima pembayaran iuran warga dengan rincian:
 👤 *Nama Warga:* ${nama}
 🏠 *Alamat/Blok:* Blok ${blok}
 📅 *Periode Iuran:* ${periode}
-💵 *Nominal:* *${fmt(nominal)}*
+💵 *Nominal:* *${formatRupiah(nominal)}*
 💳 *Metode:* ${metode || 'QRIS Kas RT'}
 🗓️ *Tanggal Bayar:* ${tanggal || new Date().toLocaleDateString('id-ID')}
 ✅ *Status:* *LUNAS / VERIFIED*
@@ -219,15 +238,13 @@ _Pengurus RT 09 / RW 14 Sumputsarirejo, Driyorejo_`;
 };
 
 export const createReminderTanggal15Message = ({ nama, blok, periode, nominal = 15000 }) => {
-  const fmt = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n);
-
   return `⏰ *PENGINGAT (REMINDER) TANGGAL 15 - IURAN WAJIB RT 09*
 *Perumahan De Naila Village Blok G*
 
 Yth. Bapak/Ibu *${nama || 'Warga'}* (Blok ${blok || '-'})
 
 Mengingatkan bahwa hari ini adalah tanggal 15, batas waktu pembayaran *Iuran Wajib Bulanan RT 09* periode *${periode || 'Bulan Ini'}*:
-💰 *Nominal Iuran Wajib:* *${fmt(nominal)}*
+💰 *Nominal Iuran Wajib:* *${formatRupiah(nominal)}*
 📌 *Status:* *BELUM LUNAS*
 
 💳 *Kemudahan Pembayaran:*
@@ -242,4 +259,3 @@ Terima kasih banyak atas kerjasamanya! 🙏✨
 
 _Pengurus & Tim Bendahara RT 09 / RW 14 De Naila Village_`;
 };
-

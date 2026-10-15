@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Layout from '../components/Layout';
 import { supabase, reinitSupabase } from '../supabaseClient';
+import { useTheme } from '../context/ThemeContext';
 import {
   getWaGatewayUrl,
   setWaGatewayUrl,
@@ -16,6 +17,7 @@ import {
 export default function Pengaturan() {
   const rtNama = localStorage.getItem('rt_nama') || localStorage.getItem('rt_username') || 'Admin RT 09';
   const rtRole = localStorage.getItem('rt_user_role') || 'admin_rt';
+  const { theme, setTheme, isDark } = useTheme();
 
   const [toast, setToast] = useState(null);
   const qrisFileInputRef = useRef(null);
@@ -413,6 +415,78 @@ export default function Pengaturan() {
         )}
 
         {/* ========================================================= */}
+        {/* SECTION: TEMA TAMPILAN SISTEM (MODE GELAP & TERANG)       */}
+        {/* ========================================================= */}
+        <div className="bg-[#1A1D2E] border border-white/10 rounded-[24px] p-6 shadow-xl space-y-4">
+          <div className="border-b border-white/10 pb-3 flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2.5">
+              <span className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold text-base">
+                🎨
+              </span>
+              <div>
+                <h3 className="font-bold text-white text-[16px]">Tema & Tampilan Antarmuka (Dark & Light Mode)</h3>
+                <p className="text-[12px] text-slate-400">Pilih mode tampilan yang nyaman untuk operasional portal RT 09</p>
+              </div>
+            </div>
+            <span className="text-xs bg-white/5 border border-white/10 px-3 py-1 rounded-full text-slate-300 font-mono">
+              Aktif: {isDark ? '🌙 Mode Gelap' : '☀️ Mode Terang'}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            {/* Dark Mode Card */}
+            <div
+              onClick={() => setTheme('dark')}
+              className={`p-4 rounded-2xl border-2 cursor-pointer transition-all duration-300 relative ${
+                isDark
+                  ? 'border-[#7C3AED] bg-[#7C3AED]/10 shadow-lg shadow-[#7C3AED]/15'
+                  : 'border-white/10 bg-white/5 hover:border-white/20'
+              }`}
+            >
+              {isDark && (
+                <span className="absolute top-3 right-3 bg-[#7C3AED] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  ✓ Aktif
+                </span>
+              )}
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#0B0E1A] border border-white/15 flex items-center justify-center text-lg text-amber-300 shrink-0">
+                  🌙
+                </div>
+                <div>
+                  <h4 className="font-bold text-white text-[14px]">Mode Gelap (Signature Obsidian)</h4>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Kontras elegan, nyaman untuk mata di malam hari dan hemat baterai</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Light Mode Card */}
+            <div
+              onClick={() => setTheme('light')}
+              className={`p-4 rounded-2xl border-2 cursor-pointer transition-all duration-300 relative ${
+                !isDark
+                  ? 'border-[#7C3AED] bg-[#7C3AED]/10 shadow-lg shadow-[#7C3AED]/15'
+                  : 'border-white/10 bg-white/5 hover:border-white/20'
+              }`}
+            >
+              {!isDark && (
+                <span className="absolute top-3 right-3 bg-[#7C3AED] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  ✓ Aktif
+                </span>
+              )}
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-lg text-amber-500 shrink-0">
+                  ☀️
+                </div>
+                <div>
+                  <h4 className="font-bold text-white text-[14px]">Mode Terang (Daylight Clean)</h4>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Tampilan bersih, cerah, tajam dan optimal saat cetak surat/laporan</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ========================================================= */}
         {/* SECTION 0: STATUS & SINKRONISASI DATABASE SUPABASE CLOUD  */}
         {/* ========================================================= */}
         <div className="bg-[#1A1D2E] border border-white/10 rounded-[24px] p-6 shadow-xl space-y-5">
@@ -434,8 +508,10 @@ export default function Pengaturan() {
           <form onSubmit={handleTestSupabase} className="space-y-4 text-[13px]">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="text-slate-400 text-xs font-medium">Supabase Project URL</label>
+                <label htmlFor="cfg-supabase-url" className="text-slate-400 text-xs font-medium">Supabase Project URL</label>
                 <input
+                  id="cfg-supabase-url"
+                  name="supabase_url"
                   value={supabaseCreds.url}
                   onChange={(e) => setSupabaseCreds({ ...supabaseCreds, url: e.target.value })}
                   placeholder="https://your-project.supabase.co"
@@ -443,8 +519,10 @@ export default function Pengaturan() {
                 />
               </div>
               <div>
-                <label className="text-slate-400 text-xs font-medium">Supabase Anon Public Key</label>
+                <label htmlFor="cfg-supabase-anon-key" className="text-slate-400 text-xs font-medium">Supabase Anon Public Key</label>
                 <input
+                  id="cfg-supabase-anon-key"
+                  name="supabase_anon_key"
                   value={supabaseCreds.anonKey}
                   onChange={(e) => setSupabaseCreds({ ...supabaseCreds, anonKey: e.target.value })}
                   placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..."
@@ -551,8 +629,10 @@ export default function Pengaturan() {
             <div className="lg:col-span-8 space-y-3.5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-slate-400 text-xs font-medium">Nama Merchant QRIS *</label>
+                  <label htmlFor="cfg-merchant-name" className="text-slate-400 text-xs font-medium">Nama Merchant QRIS *</label>
                   <input
+                    id="cfg-merchant-name"
+                    name="merchant_name"
                     required
                     value={qrisConfig.merchant_name}
                     onChange={(e) => setQrisConfig({ ...qrisConfig, merchant_name: e.target.value })}
@@ -560,8 +640,10 @@ export default function Pengaturan() {
                   />
                 </div>
                 <div>
-                  <label className="text-slate-400 text-xs font-medium">NMID / ID QRIS Nasional</label>
+                  <label htmlFor="cfg-nmid" className="text-slate-400 text-xs font-medium">NMID / ID QRIS Nasional</label>
                   <input
+                    id="cfg-nmid"
+                    name="nmid"
                     value={qrisConfig.nmid}
                     onChange={(e) => setQrisConfig({ ...qrisConfig, nmid: e.target.value })}
                     className="w-full mt-1 bg-[#23263A] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-mono outline-none focus:border-[#7C3AED]"
@@ -571,16 +653,20 @@ export default function Pengaturan() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-slate-400 text-xs font-medium">Bank Penampung Rekening Kas</label>
+                  <label htmlFor="cfg-bank-name" className="text-slate-400 text-xs font-medium">Bank Penampung Rekening Kas</label>
                   <input
+                    id="cfg-bank-name"
+                    name="bank_name"
                     value={qrisConfig.bank_name}
                     onChange={(e) => setQrisConfig({ ...qrisConfig, bank_name: e.target.value })}
                     className="w-full mt-1 bg-[#23263A] border border-white/10 rounded-xl px-3.5 py-2.5 text-white outline-none focus:border-[#7C3AED]"
                   />
                 </div>
                 <div>
-                  <label className="text-slate-400 text-xs font-medium">Nomor Rekening Bank RT 09</label>
+                  <label htmlFor="cfg-no-rekening" className="text-slate-400 text-xs font-medium">Nomor Rekening Bank RT 09</label>
                   <input
+                    id="cfg-no-rekening"
+                    name="no_rekening"
                     value={qrisConfig.no_rekening}
                     onChange={(e) => setQrisConfig({ ...qrisConfig, no_rekening: e.target.value })}
                     className="w-full mt-1 bg-[#23263A] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-mono font-bold outline-none focus:border-[#7C3AED]"
@@ -589,8 +675,10 @@ export default function Pengaturan() {
               </div>
 
               <div>
-                <label className="text-slate-400 text-xs font-medium">Nama Pemilik Rekening (Atas Nama)</label>
+                <label htmlFor="cfg-atas-nama" className="text-slate-400 text-xs font-medium">Nama Pemilik Rekening (Atas Nama)</label>
                 <input
+                  id="cfg-atas-nama"
+                  name="atas_nama"
                   value={qrisConfig.atas_nama}
                   onChange={(e) => setQrisConfig({ ...qrisConfig, atas_nama: e.target.value })}
                   className="w-full mt-1 bg-[#23263A] border border-white/10 rounded-xl px-3.5 py-2.5 text-white outline-none focus:border-[#7C3AED]"
@@ -640,6 +728,8 @@ export default function Pengaturan() {
                   <span className="text-[10px] text-[#A78BFA] font-mono">Blok {pengurusConfig?.ketua_rt?.blok || 'Pos RT'}</span>
                 </div>
                 <select
+                  id="cfg-ketua-rt"
+                  name="ketua_rt"
                   value={pengurusConfig?.ketua_rt?.nama || ''}
                   onChange={(e) => handleSelectPengurus('ketua_rt', e.target.value)}
                   className="w-full bg-[#1A1D2E] border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500 cursor-pointer font-medium"
@@ -665,6 +755,8 @@ export default function Pengaturan() {
                   <span className="text-[10px] text-[#A78BFA] font-mono">Blok {pengurusConfig?.bendahara?.blok || 'G-10'}</span>
                 </div>
                 <select
+                  id="cfg-bendahara"
+                  name="bendahara"
                   value={pengurusConfig?.bendahara?.nama || ''}
                   onChange={(e) => handleSelectPengurus('bendahara', e.target.value)}
                   className="w-full bg-[#1A1D2E] border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500 cursor-pointer font-medium"
@@ -690,6 +782,8 @@ export default function Pengaturan() {
                   <span className="text-[10px] text-[#A78BFA] font-mono">Blok {pengurusConfig?.sekretaris?.blok || 'G-12'}</span>
                 </div>
                 <select
+                  id="cfg-sekretaris"
+                  name="sekretaris"
                   value={pengurusConfig?.sekretaris?.nama || ''}
                   onChange={(e) => handleSelectPengurus('sekretaris', e.target.value)}
                   className="w-full bg-[#1A1D2E] border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500 cursor-pointer font-medium"
@@ -715,6 +809,8 @@ export default function Pengaturan() {
                   <span className="text-[10px] text-[#A78BFA] font-mono">Blok {pengurusConfig?.keamanan?.blok || 'G-08'}</span>
                 </div>
                 <select
+                  id="cfg-keamanan"
+                  name="keamanan"
                   value={pengurusConfig?.keamanan?.nama || ''}
                   onChange={(e) => handleSelectPengurus('keamanan', e.target.value)}
                   className="w-full bg-[#1A1D2E] border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500 cursor-pointer font-medium"
@@ -796,11 +892,13 @@ export default function Pengaturan() {
 
               {/* Option A: Fonnte API Token (No Server needed) */}
               <div className="space-y-1 pt-1 border-t border-white/5">
-                <label className="text-[11px] text-slate-400 flex justify-between">
+                <label htmlFor="cfg-fonnte-token" className="text-[11px] text-slate-400 flex justify-between">
                   <span>API Token Fonnte (Opsi Instan):</span>
                   <span className="text-[10px] text-emerald-400">fonnte.com (Tanpa Server)</span>
                 </label>
                 <input
+                  id="cfg-fonnte-token"
+                  name="fonnte_token"
                   type="password"
                   value={fonnteTokenInput}
                   onChange={(e) => setFonnteTokenInput(e.target.value)}
@@ -811,11 +909,13 @@ export default function Pengaturan() {
 
               {/* Option B: Self-Hosted Server URL Config */}
               <div className="space-y-1 pt-1 border-t border-white/5">
-                <label className="text-[11px] text-slate-400 flex justify-between">
+                <label htmlFor="cfg-wa-gateway-url" className="text-[11px] text-slate-400 flex justify-between">
                   <span>Backend Gateway Server URL:</span>
                   <span className="text-[10px] text-blue-400">Node.js Baileys / Tunnel</span>
                 </label>
                 <input
+                  id="cfg-wa-gateway-url"
+                  name="wa_gateway_url"
                   type="text"
                   value={waGatewayUrlInput}
                   onChange={(e) => setWaGatewayUrlInput(e.target.value)}
